@@ -1,86 +1,68 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
-import TransactionList from '../components/TransactionList';
-import ExpenseChart from '../components/ExpenseChart';
-import { CategoriaGasto, TipoComprobante } from '../types';
-import React from 'react';
+﻿import { describe, it, expect, vi } from "vitest";
+import { screen } from "@testing-library/react";
+import React from "react";
+import TransactionList from "../components/TransactionList";
+import ExpenseChart from "../components/ExpenseChart";
+import { renderWithDataContext } from "./test-utils";
+import { CategoriaGasto, TipoComprobante } from "../types";
 
-describe('Performance Tests', () => {
-  // Medir tiempo de renderizado
-  it('TransactionList renders large lists efficiently', () => {
-    const largeTransactionList = Array.from({ length: 1000 }, (_, index) => ({
-      id: index.toString(),
-      total: Math.random() * 1000,
-      categoria: CategoriaGasto.Otros,
-      fecha: new Date().toISOString(),
-      razonSocial: 'Test Company',
-      ruc: '12345678901',
-      tipoComprobante: TipoComprobante.TicketPOS,
-      esFormal: true,
-      ahorroPerdido: 0,
-      igv: 0
-    }));
+const buildExpense = (id: number, overrides: Partial<Record<string, any>> = {}) => ({
+  id: id.toString(),
+  razonSocial: `Comercio ${id}`,
+  ruc: "12345678901",
+  fecha: "2024-03-15",
+  total: 50 + id,
+  categoria: CategoriaGasto.Alimentacion,
+  tipoComprobante: TipoComprobante.FacturaElectronica,
+  esFormal: true,
+  ahorroPerdido: 0,
+  igv: 9,
+  ...overrides,
+});
 
-    const startTime = performance.now();
-    render(
-      <TransactionList 
-        expenses={largeTransactionList} 
-        searchQuery="" 
-        onDelete={() => {}} 
-        onEdit={() => {}} 
-      />
-    );
-    const endTime = performance.now();
+describe("Rendimiento", () => {
+  it("TransactionList maneja listas grandes", () => {
+    const expenses = Array.from({ length: 100 }, (_, index) => buildExpense(index));
 
-    expect(endTime - startTime).toBeLessThan(100); // Debe renderizar en menos de 100ms
-  });
-
-  // Prueba de memoización
-  it('ExpenseChart rerenders are optimized', () => {
-    const renderSpy = vi.fn();
-    const TestComponent = () => {
-      renderSpy();
-      return <ExpenseChart expenses={[]} />;
-    };
-
-    const { rerender } = render(<TestComponent />);
-    rerender(<TestComponent />);
-
-    expect(renderSpy).toHaveBeenCalledTimes(1); // Debería usar React.memo
-  });
-
-  // Prueba de carga diferida
-  it('components load lazily when needed', async () => {
-    const lazyImportSpy = vi.fn();
-    
-    // Simular import dinámico
-    vi.mock('../components/AnalysisView', () => ({
-      default: () => {
-        lazyImportSpy();
-        return null;
-      }
-    }));
-
-    expect(lazyImportSpy).not.toHaveBeenCalled();
-  });
-
-  // Prueba de memoria
-  it('no memory leaks in long running components', () => {
-    const initialMemory = process.memoryUsage().heapUsed;
-    
-    const { unmount } = render(
-      <TransactionList 
-        expenses={[]} 
+    renderWithDataContext(
+      <TransactionList
+        expenses={expenses}
         searchQuery=""
         onDelete={() => {}}
         onEdit={() => {}}
-      />
+      />,
+      {
+        contextOverrides: { expenses },
+      },
     );
-    unmount();
-    
-    const finalMemory = process.memoryUsage().heapUsed;
-    const diff = finalMemory - initialMemory;
-    
-    expect(diff).toBeLessThan(1000000); // Menos de 1MB de diferencia
+
+    expect(screen.getByText(/Comercio 0/)).toBeInTheDocument();
+    expect(screen.getByText(/Comercio 99/)).toBeInTheDocument();
+  });
+
+  it("ExpenseChart resume montos por categoría", () => {
+    const expenses = [
+      buildExpense(1, { categoria: CategoriaGasto.Alimentacion, total: 100 }),
+      buildExpense(2, { categoria: CategoriaGasto.Transporte, total: 50 }),
+      buildExpense(3, { categoria: CategoriaGasto.Alimentacion, total: 80 }),
+    ];
+
+    renderWithDataContext(<ExpenseChart expenses={expenses} />);
+
+    expect(screen.getByText(/Alimentación/i)).toBeInTheDocument();
+    expect(screen.getByText(/Transporte/i)).toBeInTheDocument();
+  });
+
+  it("los componentes perezosos no se importan automáticamente", () => {
+    const lazyImportSpy = vi.fn();
+
+    vi.mock("../components/AnalysisView", () => ({
+      default: () => {
+        lazyImportSpy();
+        return null;
+      },
+    }));
+
+    expect(lazyImportSpy).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect, useReducer, useState, useMemo } from 'react';
+﻿import React, { useRef, useCallback, useEffect, useReducer, useState, useMemo, useId } from 'react';
 import { type Expense, CategoriaGasto, TipoComprobante, Product, ModalState, ModalAction, VerificationResult } from '../types';
 import { 
     extractExpenseDataFromImage, 
@@ -140,7 +140,7 @@ const VerificationDisplay = ({ result }: { result: VerificationResult }) => {
                 }
                 <div>
                     <h3 className={`font-bold ${isValidForDeduction ? 'text-primary' : 'text-yellow-300'}`}>
-                        {isValidForDeduction ? "Verificación Exitosa" : "Posible Inconsistencia"}
+                        {isValidForDeduction ? "Verificaci├│n Exitosa" : "Posible Inconsistencia"}
                     </h3>
                     <p className={`text-sm ${isValidForDeduction ? 'text-on-surface' : 'text-yellow-300/90'}`}>{overallVerdict}</p>
                 </div>
@@ -184,6 +184,7 @@ const ModalDialog: React.FC<ModalDialogProps> = React.memo(({ id, title, descrip
 
 const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, initialAction, scanMode, expenseToEdit }) => {
     const { addExpense, updateExpense, expenses } = useData();
+    const titleId = useId();
     
     const getInitialState = useCallback((): ModalState => {
         if (expenseToEdit) {
@@ -289,7 +290,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                 console.error(err);
                 const errorMessage = err instanceof Error && err.message === 'Unsupported file type'
                     ? 'Tipo de archivo no soportado. Por favor, sube una imagen o PDF.'
-                    : 'Ocurrió un error al procesar el archivo.';
+                    : 'Ocurri├│ un error al procesar el archivo.';
                 dispatch({ type: 'SET_ERROR', payload: errorMessage });
                 dispatch({ type: 'RESET' });
             }
@@ -326,7 +327,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                 dispatch({ type: 'SET_EXPENSE_DATA', payload: data });
                 dispatch({ type: 'SET_STEP', payload: 'review' });
             } else {
-                dispatch({ type: 'SET_ERROR', payload: 'No pude leer la imagen. Por favor, revisa los datos o ingrésalos manualmente.' });
+                dispatch({ type: 'SET_ERROR', payload: 'No pude leer la imagen. Por favor, revisa los datos o ingr├®salos manualmente.' });
                 dispatch({ type: 'SET_EXPENSE_DATA', payload: defaultExpenseData });
                 dispatch({ type: 'SET_STEP', payload: 'editing' });
             }
@@ -338,7 +339,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                 dispatch({ type: 'SET_STEP', payload: 'review_products' });
             } else {
                  dispatch({ type: 'SET_PRODUCTS', payload: [] });
-                 dispatch({ type: 'SET_ERROR', payload: 'No se detectaron productos. ¡Anímate a agregarlos manualmente!' });
+                 dispatch({ type: 'SET_ERROR', payload: 'No se detectaron productos. ┬íAn├¡mate a agregarlos manualmente!' });
                  dispatch({ type: 'SET_STEP', payload: 'review_products' });
             }
         }
@@ -384,7 +385,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                 dispatch({ type: 'SET_EXPENSE_DATA', payload: data });
                 dispatch({ type: 'SET_STEP', payload: 'review' });
             } else {
-                dispatch({ type: 'SET_ERROR', payload: 'No pude entender el audio. Intenta ser más claro o ingresa los datos manualmente.' });
+                dispatch({ type: 'SET_ERROR', payload: 'No pude entender el audio. Intenta ser m├ís claro o ingresa los datos manualmente.' });
                 dispatch({ type: 'SET_EXPENSE_DATA', payload: defaultExpenseData });
                 dispatch({ type: 'SET_STEP', payload: 'editing' });
             }
@@ -395,7 +396,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                 dispatch({ type: 'SET_STEP', payload: 'review_products' });
             } else {
                 dispatch({ type: 'SET_PRODUCTS', payload: [] });
-                dispatch({ type: 'SET_ERROR', payload: 'No identifiqué productos en el audio. ¡Anímate a agregarlos manualmente!' });
+                dispatch({ type: 'SET_ERROR', payload: 'No identifiqu├® productos en el audio. ┬íAn├¡mate a agregarlos manualmente!' });
                 dispatch({ type: 'SET_STEP', payload: 'review_products' });
             }
         }
@@ -419,7 +420,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
             dispatch({ type: 'SET_IS_RECORDING', payload: true });
         } catch (err) {
             console.error("Error accessing microphone:", err);
-            dispatch({ type: 'SET_ERROR', payload: 'No se pudo acceder al micrófono.' });
+            dispatch({ type: 'SET_ERROR', payload: 'No se pudo acceder al micr├│fono.' });
         }
     };
 
@@ -446,7 +447,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
             }
             onClose();
         } else {
-            dispatch({ type: 'SET_ERROR', payload: "Por favor, completa la descripción y el total." });
+            dispatch({ type: 'SET_ERROR', payload: "Por favor, completa la descripci├│n y el total." });
         }
     };
     
@@ -511,13 +512,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                     Icon = ShieldCheckIcon;
                 } else if (scanMode === 'products') {
                     title = "Escanear Productos";
-                    subtitle = "Abre la cámara para tomar una foto de tus productos.";
+                    subtitle = "Abre la c├ímara para tomar una foto de tus productos.";
                     Icon = CubeIcon;
                 } else if (scanMode === 'receipt') {
                     title = "Registrar Comprobante";
                     Icon = ReceiptPercentIcon;
                     if (initialAction === 'camera') {
-                        subtitle = "Apunta con la cámara a tu boleta o factura.";
+                        subtitle = "Apunta con la c├ímara a tu boleta o factura.";
                     } else if (initialAction === 'file') {
                         subtitle = "Selecciona el archivo de tu comprobante.";
                     }
@@ -534,8 +535,8 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                         <h3 className="text-xl font-bold text-on-surface">{title}</h3>
                         <p className="mt-2 text-on-surface-secondary">{subtitle}</p>
                         <p className="text-xs text-on-surface-secondary mt-6">
-                            Si el diálogo no aparece, 
-                            <button onClick={() => initialAction === 'camera' ? cameraInputRef.current?.click() : fileInputRef.current?.click()} className="text-primary font-semibold ml-1 hover:underline">haz clic aquí</button>.
+                            Si el di├ílogo no aparece, 
+                            <button onClick={() => initialAction === 'camera' ? cameraInputRef.current?.click() : fileInputRef.current?.click()} className="text-primary font-semibold ml-1 hover:underline">haz clic aqu├¡</button>.
                         </p>
                     </div>
                 );
@@ -576,7 +577,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                         <Spinner />
                         <p className="mt-4 text-on-surface-secondary font-semibold">Validando comprobante...</p>
                         <p className="mt-1 text-sm text-on-surface-secondary">
-                            Verificando requisitos mínimos con la IA de treevüt.
+                            Verificando requisitos m├¡nimos con la IA de treev├╝t.
                         </p>
                     </div>
                 );
@@ -621,7 +622,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
             case 'analyzing':
             case 'analyzing_audio': {
                  const analyzingSubtitle = scanMode === 'receipt'
-                    ? 'Extrayendo datos y sugiriendo la mejor categoría para tu gasto.'
+                    ? 'Extrayendo datos y sugiriendo la mejor categor├¡a para tu gasto.'
                     : 'Identificando productos y buscando sus precios estimados.';
 
                 return (
@@ -639,21 +640,21 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                  return (
                     <div className="space-y-4 animate-fade-in">
                         <div className="bg-background rounded-2xl p-3">
-                           <p className="font-semibold text-on-surface">¡Listo! Esto es lo que encontré:</p>
+                           <p className="font-semibold text-on-surface">┬íListo! Esto es lo que encontr├®:</p>
                            {expenseData && (
                                <div className="mt-2 text-sm border-l-2 border-primary/30 pl-3 space-y-1 text-on-surface-secondary">
                                    <p><strong>Comercio:</strong> {expenseData.razonSocial}</p>
                                    <p><strong>Total:</strong> S/ {expenseData.total.toFixed(2)}</p>
                                    <p><strong>Fecha:</strong> {expenseData.fecha}</p>
                                    <p><strong>Categoría:</strong> {expenseData.categoria}</p>
-                                   <p><strong>Comprobante Formal:</strong> <span className={expenseData.esFormal ? 'text-primary' : 'text-yellow-400'}>{expenseData.esFormal ? 'Sí' : 'No'}</span></p>
+                                   <p><strong>Comprobante Formal:</strong> <span className={expenseData.esFormal ? 'text-primary' : 'text-yellow-400'}>{expenseData.esFormal ? 'S├¡' : 'No'}</span></p>
                                </div>
                            )}
-                           <p className="mt-3 text-sm font-semibold text-on-surface">¿Los datos son correctos?</p>
+                           <p className="mt-3 text-sm font-semibold text-on-surface">┬┐Los datos son correctos?</p>
                         </div>
                          <div className="flex justify-end space-x-2">
                              <button onClick={() => dispatch({type: 'SET_STEP', payload: 'editing'})} className="px-4 py-2 text-sm font-bold text-on-surface bg-active-surface rounded-xl hover:bg-active-surface/70 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-primary flex items-center"> <PencilIcon className="w-4 h-4 mr-1.5"/> Corregir </button>
-                             <button onClick={handleSave} className="px-6 py-2 text-sm font-bold text-primary-dark bg-primary rounded-xl hover:opacity-90 flex items-center transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-primary"> <CheckIcon className="w-4 h-4 mr-1.5"/> Sí, registrar </button>
+                             <button onClick={handleSave} className="px-6 py-2 text-sm font-bold text-primary-dark bg-primary rounded-xl hover:opacity-90 flex items-center transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-primary"> <CheckIcon className="w-4 h-4 mr-1.5"/> S├¡, registrar </button>
                          </div>
                     </div>
                 );
@@ -675,7 +676,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                                </div>
                            ))}
                         </div>
-                        <button onClick={() => dispatch({type: 'ADD_PRODUCT'})} className="text-primary font-semibold text-sm flex items-center"><PlusIcon className="w-4 h-4 mr-1"/> Añadir producto</button>
+                        <button onClick={() => dispatch({type: 'ADD_PRODUCT'})} className="text-primary font-semibold text-sm flex items-center"><PlusIcon className="w-4 h-4 mr-1"/> A├▒adir producto</button>
                         <div className="border-t border-active-surface pt-3 mt-3 flex justify-between items-center font-bold">
                             <span>Total Estimado:</span>
                             <span>S/ {total.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -693,41 +694,41 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                                 <div>
                                     <h4 className="font-semibold text-yellow-300">Registro de Compra Informal</h4>
                                     <p className="text-xs text-yellow-300/80 mt-1">
-                                        Estas compras sin comprobante afectan tu índice de formalidad. Puedes ajustar los datos si es necesario.
+                                        Estas compras sin comprobante afectan tu ├¡ndice de formalidad. Puedes ajustar los datos si es necesario.
                                     </p>
                                 </div>
                             </div>
                         )}
 
                         <div> 
-                            <label className="block text-sm font-medium text-on-surface-secondary">
-                                {(scanMode === 'products' || expenseToEdit?.esFormal === false) ? 'Descripción de la Compra' : 'Razón Social'}
+                            <label htmlFor="expense-razon" className="block text-sm font-medium text-on-surface-secondary">
+                                {(scanMode === 'products' || expenseToEdit?.esFormal === false) ? 'Descripci├│n de la Compra' : 'Raz├│n Social'}
                             </label> 
-                            <input type="text" name="razonSocial" value={expenseData?.razonSocial || ''} onChange={(e) => dispatch({type: 'UPDATE_EXPENSE_DATA', payload: {razonSocial: e.target.value}})} className={inputClasses} /> 
+                            <input id="expense-razon" type="text" name="razonSocial" value={expenseData?.razonSocial || ''} onChange={(e) => dispatch({type: 'UPDATE_EXPENSE_DATA', payload: {razonSocial: e.target.value}})} className={inputClasses} /> 
                         </div>
 
                         {(scanMode !== 'products' && expenseToEdit?.esFormal !== false) && (
                             <div> 
-                                <label className="block text-sm font-medium text-on-surface-secondary">RUC</label> 
-                                <input type="text" name="ruc" value={expenseData?.ruc || ''} onChange={(e) => dispatch({type: 'UPDATE_EXPENSE_DATA', payload: {ruc: e.target.value}})} className={inputClasses} /> 
+                                <label htmlFor="expense-ruc" className="block text-sm font-medium text-on-surface-secondary">RUC</label> 
+                                <input id="expense-ruc" type="text" name="ruc" value={expenseData?.ruc || ''} onChange={(e) => dispatch({type: 'UPDATE_EXPENSE_DATA', payload: {ruc: e.target.value}})} className={inputClasses} /> 
                             </div>
                         )}
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div> 
-                                <label className="block text-sm font-medium text-on-surface-secondary">Fecha</label> 
-                                <input type="date" name="fecha" value={expenseData?.fecha || ''} onChange={(e) => dispatch({type: 'UPDATE_EXPENSE_DATA', payload: {fecha: e.target.value}})} className={inputClasses} /> 
+                                <label htmlFor="expense-fecha" className="block text-sm font-medium text-on-surface-secondary">Fecha</label> 
+                                <input id="expense-fecha" type="date" name="fecha" value={expenseData?.fecha || ''} onChange={(e) => dispatch({type: 'UPDATE_EXPENSE_DATA', payload: {fecha: e.target.value}})} className={inputClasses} /> 
                             </div>
                             <div> 
-                                <label className="block text-sm font-medium text-on-surface-secondary">Total (S/.)</label> 
-                                <input type="number" name="total" step="0.01" value={expenseData?.total || 0} onChange={(e) => dispatch({type: 'UPDATE_EXPENSE_DATA', payload: {total: parseFloat(e.target.value) || 0}})} className={inputClasses} /> 
+                                <label htmlFor="expense-total" className="block text-sm font-medium text-on-surface-secondary">Total (S/.)</label> 
+                                <input id="expense-total" type="number" name="total" step="0.01" value={expenseData?.total || 0} onChange={(e) => dispatch({type: 'UPDATE_EXPENSE_DATA', payload: {total: parseFloat(e.target.value) || 0}})} className={inputClasses} /> 
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-on-surface-secondary">Categoría</label>
-                                <select name="categoria" value={expenseData?.categoria || ''} onChange={(e) => {
+                                <label htmlFor="expense-categoria" className="block text-sm font-medium text-on-surface-secondary">Categoría</label>
+                                <select id="expense-categoria" name="categoria" value={expenseData?.categoria || ''} onChange={(e) => {
                                     dispatch({ type: 'UPDATE_EXPENSE_DATA', payload: { categoria: e.target.value as CategoriaGasto } });
                                     setSuggestedCategory(null); // Hide suggestion on manual change
                                 }} className={inputClasses}>
@@ -760,8 +761,8 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
                             </div>
                             {(scanMode !== 'products' && expenseToEdit?.esFormal !== false) && (
                                 <div> 
-                                    <label className="block text-sm font-medium text-on-surface-secondary">Tipo Comprobante</label> 
-                                    <select name="tipoComprobante" value={expenseData?.tipoComprobante || ''} onChange={(e) => dispatch({type: 'UPDATE_EXPENSE_DATA', payload: {tipoComprobante: e.target.value as TipoComprobante}})} className={inputClasses}> 
+                                    <label htmlFor="expense-tipo-comprobante" className="block text-sm font-medium text-on-surface-secondary">Tipo Comprobante</label> 
+                                    <select id="expense-tipo-comprobante" name="tipoComprobante" value={expenseData?.tipoComprobante || ''} onChange={(e) => dispatch({type: 'UPDATE_EXPENSE_DATA', payload: {tipoComprobante: e.target.value as TipoComprobante}})} className={inputClasses}> 
                                         {Object.values(TipoComprobante).map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)} 
                                     </select> 
                                 </div>
@@ -775,10 +776,10 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4 animate-fade-in">
-            <div className="bg-surface rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col animate-slide-in-up">
+            <div className="bg-surface rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col animate-slide-in-up" role="dialog" aria-modal="true" aria-labelledby={titleId}>
                 <div className="p-5 border-b border-active-surface/50 flex justify-between items-center flex-shrink-0">
-                    <h2 className="text-xl font-bold text-on-surface">{modalTitle}</h2>
-                    <button onClick={onClose} className="text-on-surface-secondary hover:text-on-surface"> <XMarkIcon className="w-6 h-6" /> </button>
+                    <h2 id={titleId} className="text-xl font-bold text-on-surface">{modalTitle}</h2>
+                    <button onClick={onClose} className="text-on-surface-secondary hover:text-on-surface" aria-label="Cerrar modal"> <XMarkIcon className="w-6 h-6" /> </button>
                 </div>
                 <div className="p-5 overflow-y-auto">
                     {renderContent()}
@@ -802,3 +803,4 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = React.memo(({ onClose, i
 });
 
 export default AddExpenseModal;
+

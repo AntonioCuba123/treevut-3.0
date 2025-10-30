@@ -39,7 +39,7 @@ const expenseSchema = {
         tipoComprobante: {
             type: Type.STRING,
             enum: Object.values(TipoComprobante),
-            description: "El tipo de comprobante. Clasí­ficalo con la mayor precisión posible según las opciones. Una 'Boleta de Venta Electrónica' o 'Factura Electrónica' debe tener RUC y datos del emisor. Un 'Ticket de Máquina Registradora' es simple, usualmente sin datos fiscales detallados."
+            description: "El tipo de comprobante. Clasifícalo con la mayor precisión posible según las opciones. Una 'Boleta de Venta Electrónica' o 'Factura Electrónica' debe tener RUC y datos del emisor. Un 'Ticket de Máquina Registradora' es simple, usualmente sin datos fiscales detallados."
         },
         esFormal: {
             type: Type.BOOLEAN,
@@ -58,7 +58,7 @@ const projectionSchema = {
         },
         insight: {
             type: Type.STRING,
-            description: "Un comentario amigable y conciso (máximo 25 palabras) sobre la proyección. Debe indicar si el usuario va bien, está cerca del lí­mite o lo excederá, y ofrecer un micro-consejo si es necesario.",
+            description: "Un comentario amigable y conciso (máximo 25 palabras) sobre la proyección. Debe indicar si el usuario va bien, está cerca del límite o lo excederá, y ofrecer un micro-consejo si es necesario.",
         },
     },
     required: ["projectedSpending", "insight"],
@@ -81,7 +81,7 @@ const verificationSchema = {
         },
         isValidForDeduction: {
             type: Type.BOOLEAN,
-            description: "Veredicto final sobre si el comprobante CUMPLE con los requisitos mí­nimos para ser deducible."
+            description: "Veredicto final sobre si el comprobante CUMPLE con los requisitos mínimos para ser deducible."
         },
         overallVerdict: {
             type: Type.STRING,
@@ -255,7 +255,7 @@ export const getAIEducationalTip = async (): Promise<string> => {
     try {
         const prompt = `
             Eres un coach financiero para treevüt, una app de finanzas en Perú. Tu tono es amigable y educativo.
-            Escribe un "tip del dí­a" corto y accionable (máximo 20 palabras) sobre uno de los siguientes temas:
+            Escribe un "tip del día" corto y accionable (máximo 20 palabras) sobre uno de los siguientes temas:
             - La importancia de pedir boleta/factura electrónica con tu DNI para deducir el 3% de tu gasto.
             - Cómo aprovechar las deducciones de impuestos de SUNAT (ej. restaurantes, alquiler, servicios profesionales).
             - Un consejo de ahorro práctico (ej. la regla 50/30/20).
@@ -264,11 +264,11 @@ export const getAIEducationalTip = async (): Promise<string> => {
 
             REGLAS:
             - Sé claro, conciso y positivo.
-            - Varí­a los temas. No te repitas.
+            - Varía los temas. No te repitas.
             - NO incluyas saludos como "Hola" o "Hey". Ve directo al consejo.
 
             Ejemplos de Tip:
-            - "¿Sabí­as que el 3% de tu consumo en restaurantes puede volver a ti? ¡Pide boleta electrónica con tu DNI!"
+            - "¿Sabías que el 3% de tu consumo en restaurantes puede volver a ti? ¡Pide boleta electrónica con tu DNI!"
             - "Usa la regla 50/30/20: 50% necesidades, 30% deseos, 20% ahorros."
             - "Prueba registrar un gasto usando solo tu voz. ¡Es más rápido de lo que crees!"
             - "Un presupuesto es decirle a tu dinero a dónde ir, en lugar de preguntarte a dónde se fue."
@@ -295,13 +295,13 @@ export const verifyReceiptValidity = async (base64Image: string, mimeType: strin
             Actúa como un experto auditor de la SUNAT en Perú. Tu tarea es analizar la imagen de este comprobante de pago y verificar si cumple con los requisitos MÃ NIMOS para ser considerado un comprobante de pago electrónico válido y potencialmente deducible para el Impuesto a la Renta de personas.
 
             Verifica los siguientes 5 puntos clave:
-            1.  **RUC del Emisor:** ¿Es visible y parece un número de RUC válido de 11 dí­gitos?
+            1.  **RUC del Emisor:** ¿Es visible y parece un número de RUC válido de 11 dígitos?
             2.  **Tipo de Comprobante:** ¿Se puede identificar claramente si es una "BOLETA DE VENTA ELECTRÃ“NICA" o "FACTURA ELECTRÃ“NICA"?
             3.  **DNI del Cliente:** IMPORTANTE. ¿Se observa un número de DNI del cliente/usuario en el comprobante? Para ser deducible, la boleta debe tener el DNI de la persona.
             4.  **Fecha de Emisión:** ¿Hay una fecha clara y legible?
             5.  **Monto Total:** ¿Se puede identificar un monto total claro?
 
-            Basado en estos puntos, determina si el comprobante es válido para una posible deducción. La ausencia del DNI del cliente en una boleta la invalida para la deducción. Un ticket simple, una guí­a de remisión, una proforma o un comprobante manual sin datos fiscales claros NO son válidos.
+            Basado en estos puntos, determina si el comprobante es válido para una posible deducción. La ausencia del DNI del cliente en una boleta la invalida para la deducción. Un ticket simple, una guía de remisión, una proforma o un comprobante manual sin datos fiscales claros NO son válidos.
 
             Responde ÃšNICAMENTE con el objeto JSON definido en el schema.
         `;
@@ -400,14 +400,14 @@ export const getAIBudgetProjection = async (
             DATOS DEL USUARIO:
             - Presupuesto mensual: S/ ${budget.toFixed(2)}
             - Gasto acumulado hasta ahora: S/ ${totalExpenses.toFixed(2)}
-            - Dí­a actual del mes: ${currentDay}
-            - Dí­as totales en el mes: ${daysInMonth}
+            - Día actual del mes: ${currentDay}
+            - Días totales en el mes: ${daysInMonth}
 
             TAREA:
-            1.  Calcula el gasto proyectado a fin de mes. Usa una extrapolación lineal simple: (gasto acumulado / dí­a actual) * dí­as totales en el mes.
+            1.  Calcula el gasto proyectado a fin de mes. Usa una extrapolación lineal simple: (gasto acumulado / día actual) * días totales en el mes.
             2.  Crea un "insight" basado en la comparación entre el gasto proyectado y el presupuesto. El insight debe ser corto (máx 25 palabras).
                 - Si la proyección está muy por debajo del presupuesto (<80%), felicita al usuario.
-                - Si está cerca (80%-100%), aní­malo a mantenerse así­.
+                - Si está cerca (80%-100%), anímalo a mantenerse así.
                 - Si excede el presupuesto (>100%), adviértele amablemente y sugiere revisar gastos.
             3. Responde únicamente con el objeto JSON definido en el schema.
 
@@ -419,7 +419,7 @@ export const getAIBudgetProjection = async (
              Ejemplo de respuesta si el usuario excede:
             {
               "projectedSpending": 2150.00,
-              "insight": "¡Atención! De seguir así­, podrí­as exceder tu presupuesto. Es un buen momento para revisar los gastos no esenciales."
+              "insight": "¡Atención! De seguir así, podrías exceder tu presupuesto. Es un buen momento para revisar los gastos no esenciales."
             }
         `;
         
@@ -489,7 +489,7 @@ export const transcribeAudio = async (base64Audio: string, mimeType: string): Pr
 
     } catch (error) {
         console.error("Error transcribing audio with Gemini:", error);
-        return "No pude entender el audio. ¿Podrí­as intentarlo de nuevo?";
+        return "No pude entender el audio. ¿Podrías intentarlo de nuevo?";
     }
 };
 
@@ -525,14 +525,14 @@ export const getGeneralChatResponse = async (
         const firstName = userName.split(' ')[0];
 
         const systemInstruction = `
-            Eres treevüt, un asistente financiero experto, amigable y proactivo para usuarios en Perú. Tu propósito es ayudarles a entender sus finanzas con empatí­a y claridad. Estás hablando con ${firstName}.
+            Eres treevüt, un asistente financiero experto, amigable y proactivo para usuarios en Perú. Tu propósito es ayudarles a entender sus finanzas con empatía y claridad. Estás hablando con ${firstName}.
 
             ----------------------------------------------------
             REGLAS DE COMUNICACIÃ“N
             ----------------------------------------------------
-            1.  **Tono Empático y Peruano:** Habla en tono cercano y motivador. Dirí­gete al usuario por su primer nombre, ${firstName}. Por ejemplo: "¡Hola, ${firstName}!". Usa emojis relevantes (ej: 🌳, 💰, 💡, ✅) para hacer la conversación más visual y amigable. Puedes usar jerga peruana como "chévere", "ponte las pilas", "al toque", pero con naturalidad.
-            2.  **Respuestas Estructuradas:** Usa **tí­tulos en negrita** y viñetas (•) para organizar la información. Sé conciso y ve al grano; evita los párrafos largos.
-            3.  **Proactividad:** No solo respondas, anticí­pate. Si ves un riesgo (ej. presupuesto excedido), advierte con empatí­a. Si ves un logro (ej. buen í­ndice de formalidad), ¡celébralo! 🎉
+            1.  **Tono Empático y Peruano:** Habla en tono cercano y motivador. Dirígete al usuario por su primer nombre, ${firstName}. Por ejemplo: "¡Hola, ${firstName}!". Usa emojis relevantes (ej: 🌳, 💰, 💡, ✅) para hacer la conversación más visual y amigable. Puedes usar jerga peruana como "chévere", "ponte las pilas", "al toque", pero con naturalidad.
+            2.  **Respuestas Estructuradas:** Usa **títulos en negrita** y viñetas (•) para organizar la información. Sé conciso y ve al grano; evita los párrafos largos.
+            3.  **Proactividad:** No solo respondas, anticípate. Si ves un riesgo (ej. presupuesto excedido), advierte con empatía. Si ves un logro (ej. buen índice de formalidad), ¡celébralo! 🎉
 
             ----------------------------------------------------
             CONTEXTO FINANCIERO ACTUAL DE ${firstName.toUpperCase()}
@@ -543,7 +543,7 @@ export const getGeneralChatResponse = async (
             - Gasto Proyectado para fin de mes: S/ ${projectedSpending.toFixed(2)}
             - Número de Transacciones: ${expenses.length}
             - Ã ndice de Formalidad (gasto con comprobante): ${formalityIndex.toFixed(1)}%
-            - Categorí­a con Mayor Gasto: ${topCategory ? `${topCategory[0]} con S/ ${topCategory[1].toFixed(2)}` : 'Ninguna'}
+            - Categoría con Mayor Gasto: ${topCategory ? `${topCategory[0]} con S/ ${topCategory[1].toFixed(2)}` : 'Ninguna'}
             - Ãšltimas 5 transacciones:
               ${recentExpenses || 'No hay transacciones recientes.'}
 
@@ -551,11 +551,11 @@ export const getGeneralChatResponse = async (
             TUS TAREAS
             ----------------------------------------------------
             1.  **Analiza la pregunta de ${firstName}** en el contexto financiero proporcionado.
-            2.  **Ofrece respuestas personalizadas y accionables.** Si pregunta “¿cómo voy?”, dale un resumen con viñetas sobre su presupuesto, categorí­a principal y un consejo claro.
+            2.  **Ofrece respuestas personalizadas y accionables.** Si pregunta “¿cómo voy?”, dale un resumen con viñetas sobre su presupuesto, categoría principal y un consejo claro.
             3.  **Contexto del "Ãšltimo Gasto"**: Si el usuario pregunta sobre "mi último gasto" o una pregunta similar, basa tu respuesta en la primera transacción de la lista "Ãšltimas 5 transacciones".
-            4.  **Impacto Fiscal**: Si se pregunta por el beneficio fiscal de un gasto, verifica si es formal y si su categorí­a es deducible (Alimentación, Ocio, Servicios, Salud, Vivienda). Explí­calo simple. Ejemplo: "¡Claro, ${firstName}! De tu gasto de S/100, S/3 son deducibles. Este monto se suma a tu base y al final del año, te ayuda a reducir tu impuesto a pagar. 💸".
+            4.  **Impacto Fiscal**: Si se pregunta por el beneficio fiscal de un gasto, verifica si es formal y si su categoría es deducible (Alimentación, Ocio, Servicios, Salud, Vivienda). Explícalo simple. Ejemplo: "¡Claro, ${firstName}! De tu gasto de S/100, S/3 son deducibles. Este monto se suma a tu base y al final del año, te ayuda a reducir tu impuesto a pagar. 💸".
             5.  **Promueve el consumo formal.** Si el Ã ndice de Formalidad es bajo (< 75%), educa al usuario con mensajes cortos sobre la importancia de pedir boleta o factura.
-            6.  **Guí­a al usuario.** Si te pide establecer o cambiar un presupuesto, indí­cale amablemente que use el botón "Editar Presupuesto" en la app.
+            6.  **Guía al usuario.** Si te pide establecer o cambiar un presupuesto, indícale amablemente que use el botón "Editar Presupuesto" en la app.
             7.  **No inventes datos.** Basa tus respuestas únicamente en el contexto proporcionado.
         `;
 
@@ -585,17 +585,17 @@ export const suggestCategoryForExpense = async (razonSocial: string, tipoComprob
 
         const prompt = `
             Eres un asistente de contabilidad experto en el mercado peruano.
-            Basado en el nombre del comercio (razón social) y el tipo de comprobante, sugiere la categorí­a de gasto más apropiada.
+            Basado en el nombre del comercio (razón social) y el tipo de comprobante, sugiere la categoría de gasto más apropiada.
             
             Información del Gasto:
             - Razón Social: "${razonSocial}"
             - Tipo de Comprobante: "${tipoComprobante}"
 
-            Elige UNA de las siguientes categorí­as: ${availableCategories}.
+            Elige UNA de las siguientes categorías: ${availableCategories}.
 
-            Responde ÃšNICAMENTE con el nombre de la categorí­a. No añadas ninguna explicación.
-            Por ejemplo, si el comercio es "TOTTUS", la respuesta deberí­a ser "Consumos".
-            Si el comercio es "REPSOL", la respuesta deberí­a ser "Transporte".
+            Responde ÃšNICAMENTE con el nombre de la categoría. No añadas ninguna explicación.
+            Por ejemplo, si el comercio es "TOTTUS", la respuesta debería ser "Consumos".
+            Si el comercio es "REPSOL", la respuesta debería ser "Transporte".
         `;
 
         const response = await ai.models.generateContent({
@@ -688,12 +688,12 @@ export const getAIGamificationLevelUpMessage = async (
             TAREA:
             Escribe un mensaje de felicitación corto y emocionante (máximo 35 palabras).
             1. Felicita al usuario por su nuevo nivel "${levelName}".
-            2. Menciona un logro especí­fico positivo (ej. su buen í­ndice de formalidad).
-            3. Aní­malo a seguir hacia su próxima meta.
+            2. Menciona un logro específico positivo (ej. su buen índice de formalidad).
+            3. Anímalo a seguir hacia su próxima meta.
             4. Usa un tono cercano y positivo, puedes usar alguna jerga peruana amigable como "¡Qué chévere!".
 
             Ejemplo:
-            "¡Felicidades, ${user.name}! Ya eres un Roble Formal. ¡Qué chévere ver tu formalidad en ${user.progress.formalityIndex.toFixed(1)}%! Sigue así­ para convertirte en un Bosque Ancestral."
+            "¡Felicidades, ${user.name}! Ya eres un Roble Formal. ¡Qué chévere ver tu formalidad en ${user.progress.formalityIndex.toFixed(1)}%! Sigue así para convertirte en un Bosque Ancestral."
         `;
         
         const response = await ai.models.generateContent({
@@ -706,7 +706,7 @@ export const getAIGamificationLevelUpMessage = async (
 
     } catch (error) {
         console.error("Error getting level up message:", error);
-        return `¡Felicitaciones! Has alcanzado el nivel de ${TreevutLevel[newLevel]}. ¡Sigue así­!`;
+        return `¡Felicitaciones! Has alcanzado el nivel de ${TreevutLevel[newLevel]}. ¡Sigue así!`;
     }
 };
 
@@ -733,11 +733,11 @@ export const getAIWeeklySummary = async (
             
             TAREA:
             Escribe un resumen de 3 partes:
-            1. **Resumen:** Menciona el gasto total de la semana y la categorí­a principal.
-            2. **Observación:** Proporciona un insight o patrón interesante (ej. "Noté que la mayorí­a de tus gastos en 'Alimentación' fueron formales. ¡Excelente!").
+            1. **Resumen:** Menciona el gasto total de la semana y la categoría principal.
+            2. **Observación:** Proporciona un insight o patrón interesante (ej. "Noté que la mayoría de tus gastos en 'Alimentación' fueron formales. ¡Excelente!").
             3. **Reto:** Propón un reto simple y accionable para la próxima semana (ej. "Reto: Intenta reducir tus gastos 'hormiga' en cafés en un 10%.").
             
-            Usa un tono directo, amigable y profesional. Usa **markdown** para los tí­tulos.
+            Usa un tono directo, amigable y profesional. Usa **markdown** para los títulos.
         `;
         
         const response = await ai.models.generateContent({

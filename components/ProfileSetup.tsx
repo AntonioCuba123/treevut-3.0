@@ -36,7 +36,7 @@ const ProfileSetup: React.FC = () => {
             return;
         }
         if (documentId.length !== 8) {
-            setError('El DNI debe tener 8 dí­gitos.');
+            setError('El DNI debe tener 8 dígitos.');
             setIsSubmitting(false);
             return;
         }
@@ -92,7 +92,7 @@ const ProfileSetup: React.FC = () => {
                                 pattern="[0-9]*"
                                 value={documentId}
                                 onChange={(e) => setDocumentId(e.target.value.replace(/\D/g, '').slice(0, 8))}
-                                placeholder="Tu DNI de 8 dí­gitos"
+                                placeholder="Tu DNI de 8 dígitos"
                                 className={inputClasses}
                             />
                             {isDocIdValid && (

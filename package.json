@@ -12,7 +12,7 @@
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
     "test:a11y": "vitest run __tests__/accessibility.test.tsx",
-    "test:perf": "vitest run performance.test.tsx"
+    "test:perf": "vitest run __tests__/performance.test.tsx"
   },
   "dependencies": {
     "@google/genai": "^1.27.0",
@@ -33,7 +33,7 @@
     "@types/react": "^19.2.2",
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/ui": "^4.0.5",
-    "compression-webpack-plugin": "^11.1.0",
+    
     "cssnano": "^7.1.2",
     "cypress": "^15.5.0",
     "jest": "^30.2.0",
@@ -43,7 +43,7 @@
     "rollup-plugin-visualizer": "^6.0.5",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
-    "vite-plugin-image-preload": "^1.0.0",
+    
     "vite-plugin-imagemin": "^0.6.1",
     "vite-plugin-lightningcss": "^0.0.5",
     "vitest": "^4.0.5",

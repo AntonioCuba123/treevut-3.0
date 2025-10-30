@@ -1,57 +1,97 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import AddExpenseModal from '../components/AddExpenseModal';
-import React from 'react';
-import { DataContext } from '../contexts/DataContext';
+﻿import { describe, it, expect, vi, beforeEach } from "vitest";
+import { screen, fireEvent } from "@testing-library/react";
+import React from "react";
+import AddExpenseModal from "../components/AddExpenseModal";
+import { renderWithDataContext } from "./test-utils";
+import { CategoriaGasto, TipoComprobante } from "../types";
 
-describe('AddExpenseModal Component', () => {
-  const mockAddExpense = vi.fn();
-  const mockClose = vi.fn();
+const baseExpense = {
+  id: "exp-1",
+  razonSocial: "Restaurante Central",
+  ruc: "12345678901",
+  fecha: "2024-03-15",
+  total: 120,
+  categoria: CategoriaGasto.Alimentacion,
+  tipoComprobante: TipoComprobante.FacturaElectronica,
+  esFormal: true,
+  ahorroPerdido: 0,
+  igv: 18.31,
+};
 
-  const renderWithContext = (ui: React.ReactElement) => {
-    return render(
-      <DataContext.Provider value={{ addExpense: mockAddExpense } as any}>
-        {ui}
-      </DataContext.Provider>
-    );
-  };
+describe("AddExpenseModal", () => {
+  const onClose = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders the modal with all required fields', () => {
-    renderWithContext(<AddExpenseModal onClose={mockClose} initialAction="camera" scanMode="receipt" />);
-    
-    expect(screen.getByText('Agregar Gasto')).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: /monto/i })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: /fecha/i })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /categoría/i })).toBeInTheDocument();
+  it("muestra la vista de captura por defecto", () => {
+    renderWithDataContext(
+      <AddExpenseModal
+        onClose={onClose}
+        initialAction="camera"
+        scanMode="receipt"
+      />,
+    );
+
+    expect(
+      screen.getByRole("heading", { level: 2, name: /Registrar Comprobante/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/boleta o factura/i)).toBeInTheDocument();
   });
 
-  it('validates required fields before submission', async () => {
-    renderWithContext(<AddExpenseModal onClose={mockClose} initialAction="camera" scanMode="receipt" />);
-    
-    const submitButton = screen.getByText('Guardar Gasto');
-    fireEvent.click(submitButton);
-    
-    expect(mockAddExpense).not.toHaveBeenCalled();
-    expect(screen.getByText('El monto es requerido')).toBeInTheDocument();
+  it("valida campos requeridos al editar", async () => {
+    const updateExpense = vi.fn();
+
+    renderWithDataContext(
+      <AddExpenseModal
+        onClose={onClose}
+        initialAction={null}
+        scanMode={null}
+        expenseToEdit={{ ...baseExpense, razonSocial: "" }}
+      />,
+      {
+        contextOverrides: { updateExpense },
+      },
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /actualizar gasto/i }),
+    );
+
+    expect(updateExpense).not.toHaveBeenCalled();
+    const alert = await screen.findByRole('alert');
+    const normalized = alert.textContent ? alert.textContent.normalize('NFD') : '';
+    expect(normalized).toMatch(/descripci.*n y el total/i);
   });
 
-  it('calls addExpense with correct data on valid submission', async () => {
-    renderWithContext(<AddExpenseModal onClose={mockClose} initialAction="camera" scanMode="receipt" />);
-    
-    fireEvent.change(screen.getByLabelText('Monto'), { target: { value: '100' } });
-    fireEvent.change(screen.getByLabelText('Categoría'), { target: { value: 'Alimentos' } });
-    
-    const submitButton = screen.getByText('Guardar');
-    fireEvent.click(submitButton);
-    
-    expect(mockAddExpense).toHaveBeenCalledWith(expect.objectContaining({
-      monto: 100,
-      categoria: 'Alimentos'
-    }));
-    expect(mockClose).toHaveBeenCalled();
+  it("actualiza un gasto existente", () => {
+    const updateExpense = vi.fn();
+
+    renderWithDataContext(
+      <AddExpenseModal
+        onClose={onClose}
+        initialAction={null}
+        scanMode={null}
+        expenseToEdit={baseExpense}
+      />,
+      {
+        contextOverrides: { updateExpense },
+      },
+    );
+
+    fireEvent.change(screen.getByLabelText(/Total/i), {
+      target: { value: "150" },
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /actualizar gasto/i }),
+    );
+
+    expect(updateExpense).toHaveBeenCalledWith(
+      baseExpense.id,
+      expect.objectContaining({ total: 150 }),
+    );
+    expect(onClose).toHaveBeenCalled();
   });
 });

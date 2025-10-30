@@ -23,30 +23,11 @@ const ProfileSetup = React.lazy(() => {
   return import('./ProfileSetup');
 });
 
-// Preload critical chunks on welcome page mount
-const preloadCriticalChunks = () => {
-  const chunks = [
-    'core',
-    'expense-management',
-    'analysis'
-  ];
-  chunks.forEach(chunk => {
-    const link = document.createElement('link');
-    link.rel = 'modulepreload';
-    link.href = `/assets/${chunk}-${process.env.BUILD_ID || 'dev'}.js`;
-    document.head.appendChild(link);
-  });
-};
-
 const AppRouter: React.FC = () => {
     const { user } = useAuth();
 
     const content = () => {
         if (!user) {
-            // Preload critical chunks while on welcome page
-            React.useEffect(() => {
-                preloadCriticalChunks();
-            }, []);
             return <Welcome />;
         }
 

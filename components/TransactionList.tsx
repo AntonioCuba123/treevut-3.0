@@ -9,7 +9,7 @@ import { useData } from '../contexts/DataContext';
 import ExportButton from './ExportButton';
 
 const formatDateGroup = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00');
+    const date = new Date(`${dateString}T00:00:00`);
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
@@ -19,7 +19,11 @@ const formatDateGroup = (dateString: string) => {
 
     if (dateString === todayString) return 'Hoy';
     if (dateString === yesterdayString) return 'Ayer';
-    
+
+    if (Number.isNaN(date.getTime())) {
+        return dateString || 'Fecha desconocida';
+    }
+
     return new Intl.DateTimeFormat('es-PE', { dateStyle: 'full' }).format(date);
 };
 
@@ -59,12 +63,26 @@ const TransactionList: React.FC<TransactionListProps> = React.memo(({ expenses, 
     }, []);
 
     const groupedTransactions = useMemo(() => {
-        const sorted = [...expenses].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+        const sorted = [...expenses].sort((a, b) => {
+            const aTime = new Date(a.fecha).getTime();
+            const bTime = new Date(b.fecha).getTime();
+            if (Number.isNaN(aTime) && Number.isNaN(bTime)) return 0;
+            if (Number.isNaN(aTime)) return 1;
+            if (Number.isNaN(bTime)) return -1;
+            return bTime - aTime;
+        });
         return groupTransactionsByDate(sorted);
     }, [expenses]);
     
     const sortedDateGroups = useMemo(() => {
-        return Object.keys(groupedTransactions).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+        return Object.keys(groupedTransactions).sort((a, b) => {
+            const aTime = new Date(a).getTime();
+            const bTime = new Date(b).getTime();
+            if (Number.isNaN(aTime) && Number.isNaN(bTime)) return 0;
+            if (Number.isNaN(aTime)) return 1;
+            if (Number.isNaN(bTime)) return -1;
+            return bTime - aTime;
+        });
     }, [groupedTransactions]);
     
     const totalOfFilteredExpenses = useMemo(() => expenses.reduce((sum, expense) => sum + expense.total, 0), [expenses]);
