@@ -43,7 +43,6 @@
     "rollup-plugin-visualizer": "^6.0.5",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
-    "vite-plugin-imagemin": "^0.6.1",
     "vite-plugin-lightningcss": "^0.0.5",
     "vitest": "^4.0.5",
     "whatwg-fetch": "^3.6.20"
