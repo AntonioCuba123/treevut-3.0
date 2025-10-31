@@ -1,6 +1,8 @@
 import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect } from 'react';
 import { type User, TreevutLevel } from '../types';
 
+console.log('🔐 [AuthContext] Loading AuthContext...');
+
 interface AuthContextType {
     user: User | null;
     signIn: () => void;
@@ -16,10 +18,12 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    console.log('🔐 [AuthContext] AuthProvider rendering...');
     const [user, setUser] = useState<User | null>(null);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     useEffect(() => {
+        console.log('🔐 [AuthContext] useEffect running - loading user from localStorage...');
         try {
             let savedUser = localStorage.getItem('treevut-user');
             if (!savedUser) {
