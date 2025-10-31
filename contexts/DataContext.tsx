@@ -1,5 +1,8 @@
 import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect } from 'react';
 import { type Expense, type ExpenseData, type UserChallenge, type Challenge, ChallengeStatus, ChallengeType, ChallengeFrequency, type VirtualGood } from '../types';
+import { StreakData, updateStreakOnFormalExpense, checkIfStreakBroken } from '../services/streakService';
+import { sendStreakMilestoneNotification, sendStreakLostNotification, sendBadgeUnlockedNotification } from '../services/gamificationNotificationService';
+import { checkBadgesToUnlock } from '../services/badgeService';
 import { allChallenges } from '../services/challengeService';
 import { allVirtualGoods } from '../services/marketService';
 import { allChallenges } from '../services/challengeService';
@@ -12,6 +15,8 @@ export interface DataContextType {
     userChallenges: UserChallenge[];
     bellotas: number;
     purchasedGoods: string[];
+    streakData: StreakData;
+    unlockedBadges: string[];
     // State
     expenses: Expense[];
     budget: number | null;
@@ -54,6 +59,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
     const [bellotas, setBellotas] = useState<number>(0);
     const [purchasedGoods, setPurchasedGoods] = useState<string[]>([]);
+    const [streakData, setStreakData] = useState<StreakData>({
+        currentStreak: 0,
+        longestStreak: 0,
+        lastFormalExpenseDate: null,
+    });
+    const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     // Load all data from localStorage on initial render
@@ -101,6 +112,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             localStorage.setItem('treevut-user-challenges', JSON.stringify(userChallenges));
             localStorage.setItem('treevut-bellotas', bellotas.toString());
             localStorage.setItem('treevut-purchased-goods', JSON.stringify(purchasedGoods));
+            localStorage.setItem('treevut-streak-data', JSON.stringify(streakData));
+            localStorage.setItem('treevut-unlocked-badges', JSON.stringify(unlockedBadges));
             } else {
                 localStorage.removeItem('treevut-annualIncome');
             }
@@ -110,12 +123,77 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, [expenses, budget, annualIncome, isInitialLoad]);
 
     // --- Actions (from both contexts) ---
+    // Verificar racha rota diariamente
+    useEffect(() => {
+        const checkStreak = () => {
+            if (checkIfStreakBroken(streakData.lastFormalExpenseDate)) {
+                const previousStreak = streakData.currentStreak;
+                if (previousStreak > 0) {
+                    sendStreakLostNotification(previousStreak);
+                    setStreakData(prev => ({
+                        ...prev,
+                        currentStreak: 0,
+                    }));
+                }
+            }
+        };
+
+        // Verificar al cargar y cada hora
+        checkStreak();
+        const interval = setInterval(checkStreak, 60 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, [streakData]);
+
+    // Verificar badges desbloqueados
+    const checkAndUnlockBadges = () => {
+        const newBadges = checkBadgesToUnlock(
+            expenses,
+            formalityIndex,
+            streakData.currentStreak,
+            streakData.longestStreak,
+            unlockedBadges
+        );
+
+        if (newBadges.length > 0) {
+            newBadges.forEach(badge => {
+                sendBadgeUnlockedNotification(badge.name, badge.icon);
+            });
+            setUnlockedBadges(prev => [...prev, ...newBadges.map(b => b.id)]);
+        }
+    };
+
+    // Verificar badges después de cada cambio en los gastos
+    useEffect(() => {
+        if (expenses.length > 0) {
+            checkAndUnlockBadges();
+        }
+    }, [expenses.length, formalityIndex, streakData.longestStreak]);
+
     const addExpense = (newExpenseData: ExpenseData & { imageUrl?: string }) => {
         const newExpense: Expense = {
             id: generateUniqueId(),
             ...newExpenseData
         };
         setExpenses(prev => [...prev, newExpense]);
+
+        // Actualizar racha si es un gasto formal
+        if (newExpense.esFormal) {
+            const { streakData: newStreakData, milestoneReached } = updateStreakOnFormalExpense(
+                streakData,
+                newExpense.fecha
+            );
+            setStreakData(newStreakData);
+
+            // Notificar si se alcanzó un hito
+            if (milestoneReached) {
+                sendStreakMilestoneNotification(milestoneReached.days, milestoneReached.reward);
+                // Otorgar recompensa de bellotas
+                setBellotas(prev => prev + milestoneReached.reward);
+            }
+        }
+
+        // Verificar si se desbloquearon nuevos badges
+        checkAndUnlockBadges();
         if (!newExpense.esFormal && newExpense.ahorroPerdido > 0) {
             sendInformalExpenseNotification(newExpense);
         }
@@ -218,8 +296,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const value = useMemo(() => ({
         expenses, budget, annualIncome, alert,
         totalExpenses, totalAhorroPerdido, formalityIndex, formalityIndexByCount,
-        addExpense, updateExpense, deleteExpense, updateBudget, updateAnnualIncome, setAlert, userChallenges, bellotas, purchasedGoods, purchaseGood
-    }), [expenses, budget, annualIncome, alert, totalExpenses, totalAhorroPerdido, formalityIndex, formalityIndexByCount, userChallenges, bellotas, purchasedGoods]);
+        addExpense, updateExpense, deleteExpense, updateBudget, updateAnnualIncome, setAlert, userChallenges, bellotas, purchasedGoods, purchaseGood, streakData, unlockedBadges
+    }), [expenses, budget, annualIncome, alert, totalExpenses, totalAhorroPerdido, formalityIndex, formalityIndexByCount, userChallenges, bellotas, purchasedGoods, streakData, unlockedBadges]);
 
     return (
         <DataContext.Provider value={value}>

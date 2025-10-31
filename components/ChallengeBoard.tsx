@@ -2,6 +2,8 @@ import React from 'react';
 import { Challenge, UserChallenge, ChallengeStatus } from '../types';
 import { allChallenges } from '../services/challengeService';
 import { CheckIcon, LockClosedIcon } from './Icons';
+import { useData } from '../contexts/DataContext';
+import StreakTracker from './StreakTracker';
 
 interface ChallengeBoardProps {
     // En el futuro, pasaríamos los desafíos activos del usuario
@@ -45,6 +47,7 @@ const ChallengeCard: React.FC<{ challenge: Challenge, isCompleted: boolean }> = 
 };
 
 const ChallengeBoard: React.FC<ChallengeBoardProps> = () => {
+    const { streakData } = useData();
     // Simulación: Algunos desafíos ya completados
     const completedChallenges = ['onboarding_1'];
 
@@ -54,6 +57,8 @@ const ChallengeBoard: React.FC<ChallengeBoardProps> = () => {
 
     return (
         <div className="p-4 space-y-6">
+            {/* Tracker de Rachas */}
+            <StreakTracker streakData={streakData} />
             <div>
                 <h3 className="text-lg font-bold text-on-surface mb-2">Desafíos de Inicio</h3>
                 <div className="space-y-3">

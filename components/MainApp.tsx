@@ -14,6 +14,8 @@ const WalletView = React.lazy(() => import('./WalletView'));
 const ChallengeBoard = React.lazy(() => import(/* webpackChunkName: "challenges" */ './ChallengeBoard'));
 const Marketplace = React.lazy(() => import(/* webpackChunkName: "market" */ './Marketplace'));
 const CommunityForest = React.lazy(() => import(/* webpackChunkName: "community" */ './CommunityForest'));
+const NotificationPermissionPrompt = React.lazy(() => import(/* webpackChunkName: "notifications" */ './NotificationPermissionPrompt'));
+const BadgeCollection = React.lazy(() => import(/* webpackChunkName: "badges" */ './BadgeCollection'));
 
 // Secondary components loaded on demand
 const AddExpenseModal = React.lazy(() => 
@@ -38,13 +40,13 @@ const UserProfile = React.lazy(() =>
   import(/* webpackChunkName: "profile" */ './UserProfile')
 );
 
-export type ActiveTab = 'gastos' | 'analisis' | 'consejos' | 'senda' | 'mercado' | 'bosque';
+export type ActiveTab = 'gastos' | 'analisis' | 'consejos' | 'senda' | 'mercado' | 'bosque' | 'badges';
 type ExpenseModalAction = 'camera' | 'file';
 type ScanMode = 'receipt' | 'products' | 'verify';
 
 const MainApp: React.FC = () => {
     const { user } = useAuth(); // Although AppRouter checks this, it's needed for other user-related logic
-    const { expenses, deleteExpense, budget, totalExpenses, alert, setAlert } = useData();
+    const { expenses, deleteExpense, budget, totalExpenses, alert, setAlert, unlockedBadges } = useData();
     
     // UI State
     const [expenseModalState, setExpenseModalState] = useState<{
@@ -188,7 +190,7 @@ const MainApp: React.FC = () => {
         }, 200);
     };
 
-    const tabs: ActiveTab[] = ['gastos', 'analisis', 'consejos', 'senda', 'mercado', 'bosque'];
+    const tabs: ActiveTab[] = ['gastos', 'analisis', 'consejos', 'senda', 'mercado', 'bosque', 'badges'];
     const activeIndex = tabs.indexOf(activeTab);
     const transformValue = -activeIndex * 100;
 
@@ -206,6 +208,7 @@ const MainApp: React.FC = () => {
                     <button onClick={() => handleTabClick('senda')} className={`flex-1 text-center py-2.5 rounded-xl font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary ${activeTab === 'senda' ? 'bg-active-surface text-on-surface' : 'text-on-surface-secondary hover:bg-surface'}`}>Senda</button>
 <button onClick={() => handleTabClick('mercado')} className={`flex-1 text-center py-2.5 rounded-xl font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary ${activeTab === 'mercado' ? 'bg-active-surface text-on-surface' : 'text-on-surface-secondary hover:bg-surface'}`}>Mercado</button>
 <button onClick={() => handleTabClick('bosque')} className={`flex-1 text-center py-2.5 rounded-xl font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary ${activeTab === 'bosque' ? 'bg-active-surface text-on-surface' : 'text-on-surface-secondary hover:bg-surface'}`}>Bosque</button>
+<button onClick={() => handleTabClick('badges')} className={`flex-1 text-center py-2.5 rounded-xl font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary ${activeTab === 'badges' ? 'bg-active-surface text-on-surface' : 'text-on-surface-secondary hover:bg-surface'}`}>Badges</button>
                 </nav>
             </div>
             
@@ -216,13 +219,13 @@ const MainApp: React.FC = () => {
                  <div className="overflow-x-hidden flex-1">
                     <div 
                         {...swipeHandlers}
-                        className="flex w-[600%] h-full"
+                        className="flex w-[700%] h-full"
                         style={{ 
                             transform: `translateX(calc(${transformValue}% + ${swipeOffset}px))`,
                             transition: isSwiping ? 'none' : 'transform 0.3s ease-in-out'
                         }}
                     >
-                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
+                        <div className="w-1/7 flex-shrink-0 h-full overflow-y-auto">
                             <div className="px-4 pb-32">
                                  <WalletView
                                     expenses={filteredExpenses}
@@ -233,29 +236,34 @@ const MainApp: React.FC = () => {
                                  />
                             </div>
                         </div>
-                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
+                        <div className="w-1/7 flex-shrink-0 h-full overflow-y-auto">
                             <div className="px-4 pb-32">
                                 <AnalysisView />
                             </div>
                         </div>
-                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
+                        <div className="w-1/7 flex-shrink-0 h-full overflow-y-auto">
                             <div className="px-4 pb-32">
                                 <LearnView />
                             </div>
                         </div>
-                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
+                        <div className="w-1/7 flex-shrink-0 h-full overflow-y-auto">
                             <div className="px-4 pb-32">
                                 <Suspense fallback={<Spinner />}><ChallengeBoard /></Suspense>
                             </div>
                         </div>
-                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
+                        <div className="w-1/7 flex-shrink-0 h-full overflow-y-auto">
                             <div className="px-4 pb-32">
                                 <Suspense fallback={<Spinner />}><Marketplace userBellotas={user?.bellotas || 0} purchasedGoods={user?.purchasedGoods || []} onPurchase={() => {}} /></Suspense>
                             </div>
                         </div>
-                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
+                        <div className="w-1/7 flex-shrink-0 h-full overflow-y-auto">
                             <div className="px-4 pb-32">
                                 <Suspense fallback={<Spinner />}><CommunityForest /></Suspense>
+                            </div>
+                        </div>
+                        <div className="w-1/7 flex-shrink-0 h-full overflow-y-auto">
+                            <div className="px-4 pb-32">
+                                <Suspense fallback={<Spinner />}><BadgeCollection unlockedBadges={unlockedBadges} /></Suspense>
                             </div>
                         </div>
                     </div>
@@ -276,6 +284,7 @@ const MainApp: React.FC = () => {
             {confirmDeleteModal.isOpen && <ConfirmDeleteModal onClose={() => setConfirmDeleteModal({ isOpen: false, expenseId: null })} onConfirm={handleConfirmDelete} />}
             {isTourActive && <OnboardingTour step={tourSteps[tourStep]} onNext={handleNextStep} onSkip={handleEndTour} />}
             {isAssistantChatOpen && <AIAssistantChat onClose={() => setIsAssistantChatOpen(false)} />}
+            <NotificationPermissionPrompt />
             <DeveloperNotice />
         </div>
     );
