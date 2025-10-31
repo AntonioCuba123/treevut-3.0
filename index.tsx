@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 
 // Registrar Service Worker para notificaciones
+// TEMPORALMENTE COMENTADO PARA DEBUGGING
+/*
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
@@ -15,6 +17,7 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
+*/
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
