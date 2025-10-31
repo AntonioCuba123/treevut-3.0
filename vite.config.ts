@@ -150,38 +150,6 @@ export default defineConfig(({ mode }) => {
         },
         rollupOptions: {
           output: {
-            manualChunks: {
-              'vendor': [
-                'react',
-                'react-dom',
-                '@google/genai'
-              ],
-              'core': [
-                './components/Header.tsx',
-                './components/ActionButtons.tsx',
-                './components/WalletView.tsx'
-              ],
-              'analysis': [
-                './components/AnalysisView.tsx',
-                './components/ExpenseChart.tsx',
-                './components/CategoryAnalysis.tsx',
-                './components/TrendAnalysis.tsx'
-              ],
-              'ai-features': [
-                './components/AIAssistantChat.tsx',
-                './services/geminiService.ts'
-              ],
-              'expense-management': [
-                './components/AddExpenseModal.tsx',
-                './components/ExpenseCard.tsx',
-                './services/taxService.ts'
-              ],
-              'auth': [
-                './components/Welcome.tsx',
-                './components/ProfileSetup.tsx',
-                './contexts/AuthContext.tsx'
-              ]
-            },
             chunkFileNames: 'assets/[name]-[hash].js',
             entryFileNames: 'assets/[name]-[hash].js',
             assetFileNames: 'assets/[name]-[hash].[ext]',
