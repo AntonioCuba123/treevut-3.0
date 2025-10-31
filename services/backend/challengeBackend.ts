@@ -1,10 +1,12 @@
-import { supabase, SupabaseUserChallenge } from '../../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { UserChallenge, ChallengeStatus } from '../../types';
+import { SupabaseUserChallenge } from '../../lib/supabase';
 
 /**
  * Sincroniza los desafíos del usuario con el backend de Supabase
  */
 export const syncUserChallenges = async (userId: string, challenges: UserChallenge[]): Promise<void> => {
+    if (!isSupabaseConfigured()) return;
     try {
         // Convertir desafíos locales al formato de Supabase
         const supabaseChallenges = challenges.map(challenge => ({
@@ -18,7 +20,7 @@ export const syncUserChallenges = async (userId: string, challenges: UserChallen
         }));
 
         // Upsert (insertar o actualizar) en Supabase
-        const { error } = await supabase
+        const { error } = await supabase!
             .from('user_challenges')
             .upsert(supabaseChallenges, {
                 onConflict: 'user_id,challenge_id',
@@ -38,8 +40,9 @@ export const syncUserChallenges = async (userId: string, challenges: UserChallen
  * Obtiene los desafíos del usuario desde el backend
  */
 export const fetchUserChallenges = async (userId: string): Promise<UserChallenge[]> => {
+    if (!isSupabaseConfigured()) return [];
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabase!
             .from('user_challenges')
             .select('*')
             .eq('user_id', userId);
@@ -55,7 +58,7 @@ export const fetchUserChallenges = async (userId: string): Promise<UserChallenge
             status: challenge.status as ChallengeStatus,
             currentProgress: challenge.current_progress,
             startDate: challenge.start_date,
-            endDate: challenge.end_date,
+            endDate: challenge.endDate,
         }));
     } catch (error) {
         console.error('Failed to fetch challenges:', error);
@@ -71,9 +74,10 @@ export const claimChallengeReward = async (
     challengeId: string,
     rewardBellotas: number
 ): Promise<boolean> => {
+    if (!isSupabaseConfigured()) return false;
     try {
         // Iniciar una transacción
-        const { error: challengeError } = await supabase
+        const { error: challengeError } = await supabase!
             .from('user_challenges')
             .update({ status: 'claimed', updated_at: new Date().toISOString() })
             .eq('user_id', userId)
@@ -82,7 +86,7 @@ export const claimChallengeReward = async (
         if (challengeError) throw challengeError;
 
         // Actualizar las bellotas del usuario
-        const { error: profileError } = await supabase.rpc('increment_bellotas', {
+        const { error: profileError } = await supabase!.rpc('increment_bellotas', {
             p_user_id: userId,
             p_amount: rewardBellotas,
         });

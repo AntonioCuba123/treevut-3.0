@@ -1,4 +1,4 @@
-import { supabase } from '../../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 
 /**
  * Sincroniza el perfil del usuario con el backend de Supabase
@@ -11,8 +11,9 @@ export const syncUserProfile = async (
     lastFormalExpenseDate: string | null,
     unlockedBadges: string[]
 ): Promise<void> => {
+    if (!isSupabaseConfigured()) return;
     try {
-        const { error } = await supabase
+        const { error } = await supabase!
             .from('user_profiles')
             .upsert({
                 user_id: userId,
@@ -40,8 +41,9 @@ export const syncUserProfile = async (
  * Obtiene el perfil del usuario desde el backend
  */
 export const fetchUserProfile = async (userId: string) => {
+    if (!isSupabaseConfigured()) return null;
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabase!
             .from('user_profiles')
             .select('*')
             .eq('user_id', userId)
@@ -73,9 +75,10 @@ export const purchaseVirtualGood = async (
     goodId: string,
     cost: number
 ): Promise<boolean> => {
+    if (!isSupabaseConfigured()) return false;
     try {
         // Intentar decrementar las bellotas
-        const { data: decrementResult, error: decrementError } = await supabase.rpc('decrement_bellotas', {
+        const { data: decrementResult, error: decrementError } = await supabase!.rpc('decrement_bellotas', {
             p_user_id: userId,
             p_amount: cost,
         });
@@ -84,7 +87,7 @@ export const purchaseVirtualGood = async (
         if (!decrementResult) return false; // No hay suficientes bellotas
 
         // Añadir el bien comprado
-        const { error: goodError } = await supabase.rpc('add_purchased_good', {
+        const { error: goodError } = await supabase!.rpc('add_purchased_good', {
             p_user_id: userId,
             p_good_id: goodId,
         });

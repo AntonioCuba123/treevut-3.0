@@ -1,10 +1,11 @@
-import { supabase, SupabaseLeaderboardEntry } from '../../lib/supabase';
+import { supabase, isSupabaseConfigured, SupabaseLeaderboardEntry } from '../../lib/supabase';
 import { LeaderboardEntry } from '../../types';
 
 /**
  * Obtiene el leaderboard semanal desde el backend
  */
 export const fetchWeeklyLeaderboard = async (): Promise<LeaderboardEntry[]> => {
+    if (!isSupabaseConfigured()) return [];
     try {
         // Calcular el inicio de la semana actual
         const now = new Date();
@@ -13,7 +14,7 @@ export const fetchWeeklyLeaderboard = async (): Promise<LeaderboardEntry[]> => {
         const weekStart = new Date(now.setDate(diff));
         weekStart.setHours(0, 0, 0, 0);
 
-        const { data, error } = await supabase
+        const { data, error } = await supabase!
             .from('leaderboard')
             .select('*')
             .eq('week_start', weekStart.toISOString().split('T')[0])
@@ -48,6 +49,7 @@ export const updateUserLeaderboardEntry = async (
     userPicture: string,
     formalityIndex: number
 ): Promise<void> => {
+    if (!isSupabaseConfigured()) return;
     try {
         // Calcular el inicio de la semana actual
         const now = new Date();
@@ -56,7 +58,7 @@ export const updateUserLeaderboardEntry = async (
         const weekStart = new Date(now.setDate(diff));
         weekStart.setHours(0, 0, 0, 0);
 
-        const { error } = await supabase
+        const { error } = await supabase!
             .from('leaderboard')
             .upsert({
                 user_id: userId,
