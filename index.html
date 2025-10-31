@@ -460,6 +460,16 @@
 </head>
 <body class="bg-background text-on-surface font-sans">
     <div id="root"></div>
+    <script>
+      // Fallback: Si React no se monta en 5 segundos, mostrar error
+      setTimeout(function() {
+        var root = document.getElementById('root');
+        if (root && root.children.length === 0) {
+          root.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center; color: #F3F4F6;"><h1 style="font-size: 1.5rem; margin-bottom: 1rem; color: #EF4444;">⚠️ Error al cargar la aplicación</h1><p style="margin-bottom: 1rem; color: #9CA3AF;">La aplicación no pudo cargarse correctamente. Esto puede deberse a:</p><ul style="text-align: left; margin-bottom: 1rem; color: #9CA3AF;"><li>Problema con el navegador</li><li>Extensiones que bloquean JavaScript</li><li>Caché corrupto</li></ul><button onclick="location.reload()" style="background-color: #22C55E; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; cursor: pointer; font-size: 1rem;">Recargar Página</button></div>';
+          console.error('React app failed to mount after 5 seconds');
+        }
+      }, 5000);
+    </script>
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>

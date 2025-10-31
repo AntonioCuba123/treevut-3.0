@@ -1,37 +1,16 @@
 console.log('🚀 [1/10] Starting Treevüt app...');
 
-try {
-  console.log('🚀 [2/10] Importing React...');
-  // @ts-ignore
-  import React from 'react';
-  console.log('✅ [2/10] React imported successfully');
-} catch (error) {
-  console.error('❌ [2/10] Failed to import React:', error);
-  document.body.innerHTML = `<div style="color: white; padding: 20px;"><h1>Error importing React</h1><pre>${error}</pre></div>`;
-  throw error;
-}
+console.log('🚀 [2/10] Importing React...');
+import React from 'react';
+console.log('✅ [2/10] React imported successfully');
 
-try {
-  console.log('🚀 [3/10] Importing ReactDOM...');
-  // @ts-ignore
-  import ReactDOM from 'react-dom/client';
-  console.log('✅ [3/10] ReactDOM imported successfully');
-} catch (error) {
-  console.error('❌ [3/10] Failed to import ReactDOM:', error);
-  document.body.innerHTML = `<div style="color: white; padding: 20px;"><h1>Error importing ReactDOM</h1><pre>${error}</pre></div>`;
-  throw error;
-}
+console.log('🚀 [3/10] Importing ReactDOM...');
+import ReactDOM from 'react-dom/client';
+console.log('✅ [3/10] ReactDOM imported successfully');
 
-try {
-  console.log('🚀 [4/10] Importing App component...');
-  // @ts-ignore
-  import App from './App';
-  console.log('✅ [4/10] App component imported successfully');
-} catch (error) {
-  console.error('❌ [4/10] Failed to import App:', error);
-  document.body.innerHTML = `<div style="color: white; padding: 20px;"><h1>Error importing App</h1><pre>${error}</pre></div>`;
-  throw error;
-}
+console.log('🚀 [4/10] Importing App component...');
+import App from './App';
+console.log('✅ [4/10] App component imported successfully');
 
 console.log('🚀 [5/10] Looking for root element...');
 const rootElement = document.getElementById('root');

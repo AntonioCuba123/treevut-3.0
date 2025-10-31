@@ -77,6 +77,16 @@ export default defineConfig(({ mode }) => {
         port: 3000,
         host: '0.0.0.0',
       },
+      preview: {
+        port: 4173,
+        host: '0.0.0.0',
+        strictPort: false,
+        allowedHosts: [
+          '.manusvm.computer',
+          'localhost',
+          '127.0.0.1'
+        ]
+      },
       test: {
         environment: 'jsdom',
         globals: true,
@@ -122,11 +132,11 @@ export default defineConfig(({ mode }) => {
         lightningcss({
           minify: true
         }),
-        strip({
-          include: ['**/*.tsx', '**/*.ts'],
-          functions: ['console.log', 'console.debug', 'console.info'],
-          sourceMap: false
-        }),
+        // strip({
+        //   include: ['**/*.tsx', '**/*.ts'],
+        //   functions: ['console.log', 'console.debug', 'console.info'],
+        //   sourceMap: false
+        // }),
         visualizer({
           filename: './dist/stats.html',
           gzipSize: true,
