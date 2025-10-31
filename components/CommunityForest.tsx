@@ -55,5 +55,4 @@ const CommunityForest: React.FC = () => {
     );
 };
 
-export default CommunityForest; CommunityForest.tsx
 export default CommunityForest;
