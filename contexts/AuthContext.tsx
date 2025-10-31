@@ -34,6 +34,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (savedUser) {
                 const parsedUser = JSON.parse(savedUser) as User;
                 // --- Backward compatibility for existing users ---
+                if (!parsedUser.id) {
+                    parsedUser.id = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                }
                 if (parsedUser.level === undefined) {
                     parsedUser.level = TreevutLevel.Brote;
                 }
@@ -43,6 +46,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 if (parsedUser.isProfileComplete === undefined) {
                     // Assume existing users have completed their profile
                     parsedUser.isProfileComplete = true;
+                }
+                if (parsedUser.bellotas === undefined) {
+                    parsedUser.bellotas = 0;
+                }
+                if (parsedUser.completedChallenges === undefined) {
+                    parsedUser.completedChallenges = [];
+                }
+                if (parsedUser.purchasedGoods === undefined) {
+                    parsedUser.purchasedGoods = [];
                 }
                 setUser(parsedUser);
             }
@@ -96,19 +108,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
     };
     
-    const baseNewUser: Omit<User, 'name' | 'email' | 'picture'> = {
+    const baseNewUser: Omit<User, 'id' | 'name' | 'email' | 'picture'> = {
         level: TreevutLevel.Brote,
         documentId: undefined,
+        bellotas: 0,
         progress: {
             expensesCount: 0,
             formalityIndex: 100
         },
+        completedChallenges: [],
+        purchasedGoods: [],
         isProfileComplete: false, // New users must complete the profile setup
     };
 
     const signIn = () => {
         const mockUser: User = {
             ...baseNewUser,
+            id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: "",
             email: "google.user@treevut.pe",
             picture: `https://ui-avatars.com/api/?name=G&background=1EFF78&color=000&size=128&bold=true`
@@ -119,6 +135,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const signInWithEmail = () => {
         const mockUser: User = {
             ...baseNewUser,
+            id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: "",
             email: "amigo@treevut.pe",
             picture: `https://ui-avatars.com/api/?name=T&background=1EFF78&color=000&size=128&bold=true`
@@ -130,6 +147,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const initials = name.split(' ').map(n => n[0]).join('');
         const mockUser: User = {
             ...baseNewUser,
+            id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: name,
             email: email,
             picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=1EFF78&color=000&size=128&bold=true`

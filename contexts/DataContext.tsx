@@ -5,9 +5,12 @@ import { sendStreakMilestoneNotification, sendStreakLostNotification, sendBadgeU
 import { checkBadgesToUnlock } from '../services/badgeService';
 import { allChallenges } from '../services/challengeService';
 import { allVirtualGoods } from '../services/marketService';
-import { allChallenges } from '../services/challengeService';
 import { sendInformalExpenseNotification } from '../services/notificationService';
 import { generateUniqueId } from '../utils';
+import { syncUserChallenges } from '../services/backend/challengeBackend';
+import { syncUserProfile } from '../services/backend/profileBackend';
+import { updateUserLeaderboardEntry } from '../services/backend/leaderboardBackend';
+import { useAuth } from './AuthContext';
 
 export type AlertState = { message: string; type: 'info' | 'warning' | 'danger' } | null;
 
@@ -42,6 +45,8 @@ export interface DataContextType {
 export const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const { user } = useAuth();
+    
     // Combined State from AppContext and ExpensesContext
     const [expenses, setExpenses] = useState<Expense[]>(() => {
         const saved = localStorage.getItem('treevut-expenses');
@@ -168,6 +173,69 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             checkAndUnlockBadges();
         }
     }, [expenses.length, formalityIndex, streakData.longestStreak]);
+
+    // Sincronizar perfil de usuario con Supabase
+    useEffect(() => {
+        if (isInitialLoad || !user?.id) return;
+        
+        const syncProfile = async () => {
+            try {
+                await syncUserProfile(
+                    user.id,
+                    bellotas,
+                    purchasedGoods,
+                    streakData.currentStreak,
+                    streakData.lastFormalExpenseDate,
+                    unlockedBadges
+                );
+            } catch (error) {
+                console.error('Error syncing user profile:', error);
+            }
+        };
+
+        // Debounce la sincronización para evitar demasiadas llamadas
+        const timeoutId = setTimeout(syncProfile, 1000);
+        return () => clearTimeout(timeoutId);
+    }, [bellotas, purchasedGoods, streakData, unlockedBadges, user?.id, isInitialLoad]);
+
+    // Sincronizar desafíos con Supabase
+    useEffect(() => {
+        if (isInitialLoad || !user?.id) return;
+        
+        const syncChallenges = async () => {
+            try {
+                await syncUserChallenges(user.id, userChallenges);
+            } catch (error) {
+                console.error('Error syncing user challenges:', error);
+            }
+        };
+
+        // Debounce la sincronización
+        const timeoutId = setTimeout(syncChallenges, 1000);
+        return () => clearTimeout(timeoutId);
+    }, [userChallenges, user?.id, isInitialLoad]);
+
+    // Sincronizar leaderboard con Supabase
+    useEffect(() => {
+        if (isInitialLoad || !user?.id || !user?.name) return;
+        
+        const syncLeaderboard = async () => {
+            try {
+                await updateUserLeaderboardEntry(
+                    user.id,
+                    user.name,
+                    user.picture || '',
+                    formalityIndex
+                );
+            } catch (error) {
+                console.error('Error syncing leaderboard:', error);
+            }
+        };
+
+        // Sincronizar el leaderboard cada vez que cambie el índice de formalidad
+        const timeoutId = setTimeout(syncLeaderboard, 2000);
+        return () => clearTimeout(timeoutId);
+    }, [formalityIndex, user?.id, user?.name, user?.picture, isInitialLoad]);
 
     const addExpense = (newExpenseData: ExpenseData & { imageUrl?: string }) => {
         const newExpense: Expense = {

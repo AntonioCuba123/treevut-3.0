@@ -22,6 +22,7 @@ export enum TreevutLevel {
 }
 
 export interface User {
+    id: string; // ID único del usuario
     name: string;
     email: string;
     picture: string;
