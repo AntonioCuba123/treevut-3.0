@@ -1,5 +1,5 @@
 import path from 'path';
-import { defineConfig, loadEnv, Plugin } from 'vite';
+import { defineConfig, loadEnv, Plugin, IndexHtmlTransformContext } from 'vite';
 import react from '@vitejs/plugin-react';
 import viteImagemin from 'vite-plugin-imagemin';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -7,23 +7,65 @@ import strip from '@rollup/plugin-strip';
 import CompressionPlugin from 'compression-webpack-plugin';
 import lightningcss from 'vite-plugin-lightningcss';
 import imagePreload from 'vite-plugin-image-preload';
+import type { OutputAsset, OutputChunk } from 'rollup';
 
 // Plugin personalizado para preload
 function preloadLinks(): Plugin {
   return {
     name: 'preload-links',
-    transformIndexHtml(html) {
-      const preloads = [
-        // Preload main chunks
-        `<link rel="preload" href="/assets/vendor.js" as="script">`,
-        `<link rel="preload" href="/assets/index.js" as="script">`,
-        // Preload critical CSS
-        `<link rel="preload" href="/assets/index.css" as="style">`
-      ];
-      return html.replace(
-        '</head>',
-        `${preloads.join('\n')}\n</head>`
+    enforce: 'post',
+    transformIndexHtml(html: string, ctx?: IndexHtmlTransformContext) {
+      if (!ctx?.bundle) {
+        return html;
+      }
+
+      const bundleEntries = Object.values(ctx.bundle);
+
+      const findChunkByName = (name: string): OutputChunk | undefined =>
+        bundleEntries.find(
+          (item): item is OutputChunk =>
+            item.type === 'chunk' && item.name === name
+        );
+
+      const scriptChunks = ['vendor', 'index']
+        .map(findChunkByName)
+        .filter((chunk): chunk is OutputChunk => Boolean(chunk));
+
+      const cssAssets = bundleEntries.filter(
+        (item): item is OutputAsset =>
+          item.type === 'asset' && item.fileName.endsWith('.css')
       );
+
+      const tags = [
+        ...scriptChunks.map((chunk) => ({
+          tag: 'link',
+          attrs: {
+            rel: 'preload',
+            as: 'script',
+            href: `/${chunk.fileName}`,
+            crossorigin: ''
+          },
+          injectTo: 'head' as const
+        })),
+        ...cssAssets.map((asset) => ({
+          tag: 'link',
+          attrs: {
+            rel: 'preload',
+            as: 'style',
+            href: `/${asset.fileName}`
+          },
+          injectTo: 'head' as const
+        }))
+      ];
+
+      if (!tags.length) {
+        return html;
+      }
+
+      return {
+        html,
+        tags
+      };
     }
   };
 }
