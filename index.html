@@ -81,8 +81,14 @@
               sans: ['Poppins', 'sans-serif'],
             },
             colors: {
-              primary: '#22C55E', // Green 500
-              'primary-dark': '#FFFFFF', // Text on primary buttons
+              primary: '#22C55E',
+              'primary-dark': '#FFFFFF',
+              background: '#111827',
+              surface: '#1F2937',
+              'active-surface': '#374151',
+              'on-surface': '#F3F4F6',
+              'on-surface-secondary': '#9CA3AF',
+              'danger': '#EF4444',
             },
             screens: {
               'xs': '360px',
@@ -103,21 +109,6 @@
                 xl: '5rem',
                 '2xl': '6rem',
               },
-            },
-            },
-            screens: {
-              'xs': '320px',
-              'sm': '640px',
-              'md': '768px',
-              'lg': '1024px',
-              'xl': '1280px',
-            },
-              background: '#111827', // Gray 900
-              surface: '#1F2937', // Gray 800
-              'active-surface': '#374151', // Gray 700
-              'on-surface': '#F3F4F6', // Gray 100
-              'on-surface-secondary': '#9CA3AF', // Gray 400
-              'danger': '#EF4444', // Red 500
             },
             borderRadius: {
               '2xl': '1rem',
@@ -189,8 +180,8 @@
     }
     .tour-textbox {
         position: fixed;
-        background-color: #1F2937; /* surface */
-        color: #F3F4F6; /* on-surface */
+        background-color: #1F2937;
+        color: #F3F4F6;
         padding: 1rem;
         border-radius: 16px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.4);
@@ -224,8 +215,8 @@
     /* Speed Dial FAB Menu Styles */
     .fab-menu-item {
         position: absolute;
-        bottom: 10px; /* Aligns with center of 72px FAB ( (72-52)/2 ) */
-        right: 10px; /* Aligns with center of 72px FAB */
+        bottom: 10px;
+        right: 10px;
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
         opacity: 0;
         transform: translate(0, 0) scale(0.5);
@@ -262,14 +253,14 @@
         animation: slide-in-up 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
     .chat-bubble-ai {
-        background-color: #374151; /* active-surface */
-        color: #F3F4F6; /* on-surface */
+        background-color: #374151;
+        color: #F3F4F6;
         border-bottom-left-radius: 0.25rem;
         align-self: flex-start;
     }
     .chat-bubble-user {
-        background-color: #22C55E; /* primary */
-        color: #FFFFFF; /* primary-dark */
+        background-color: #22C55E;
+        color: #FFFFFF;
         border-bottom-right-radius: 0.25rem;
         align-self: flex-end;
     }
@@ -361,39 +352,39 @@
         animation: google-spinner-rotate 1.5s linear infinite;
     }
 
-    /* Custom Range Slider Styles */
-    input[type=range] {
+    /* Slider Styles */
+    input[type="range"] {
         -webkit-appearance: none;
         background: transparent;
     }
-    input[type=range]:focus {
+    input[type="range"]:focus {
         outline: none;
     }
-    input[type=range]::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 8px;
-        cursor: pointer;
-        background: #374151; /* active-surface */
-        border-radius: 8px;
-    }
-    input[type=range]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        height: 24px;
-        width: 24px;
-        border-radius: 50%;
-        background: #22C55E; /* primary */
-        cursor: pointer;
-        margin-top: -8px;
-        border: 4px solid #111827; /* background */
-    }
-    input[type=range]::-moz-range-track {
+    input[type="range"]::-webkit-slider-runnable-track {
         width: 100%;
         height: 8px;
         cursor: pointer;
         background: #374151;
         border-radius: 8px;
     }
-    input[type=range]::-moz-range-thumb {
+    input[type="range"]::-webkit-slider-thumb {
+        height: 24px;
+        width: 24px;
+        border-radius: 50%;
+        background: #22C55E;
+        cursor: pointer;
+        -webkit-appearance: none;
+        margin-top: -8px;
+        border: 4px solid #111827;
+    }
+    input[type="range"]::-moz-range-track {
+        width: 100%;
+        height: 8px;
+        cursor: pointer;
+        background: #374151;
+        border-radius: 8px;
+    }
+    input[type="range"]::-moz-range-thumb {
         height: 20px;
         width: 20px;
         border-radius: 50%;
@@ -401,25 +392,34 @@
         cursor: pointer;
         border: 4px solid #111827;
     }
-    
-    /* Consistent Button Press Feedback */
-    .bg-primary, .bg-active-surface, .bg-danger, .bg-surface, .bg-revo-gradient {
-        transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-    }
-    .bg-primary:active, .bg-active-surface:active, .bg-danger:active, .bg-surface:active, .bg-revo-gradient:active {
+
+    /* Button Active States */
+    .bg-primary:active,
+    .bg-surface:active,
+    .bg-active-surface:active,
+    .bg-danger:active,
+    .bg-revo-gradient:active {
         transform: scale(0.96);
         filter: brightness(0.9);
     }
-
-    .text-outline-black {
-      text-shadow: -1px -1px 0 #111827, 1px -1px 0 #111827, -1px 1px 0 #111827, 1px 1px 0 #111827;
+    .bg-primary,
+    .bg-surface,
+    .bg-active-surface,
+    .bg-danger,
+    .bg-revo-gradient {
+        transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
     }
 
-    /* Prose styles for LearnView content */
+    /* Text Outline */
+    .text-outline-black {
+        text-shadow: -1px -1px 0 #111827, 1px -1px 0 #111827, -1px 1px 0 #111827, 1px 1px 0 #111827;
+    }
+
+    /* Prose Styles for AI Chat */
     .prose {
-        color: #9CA3AF; /* on-surface-secondary */
-        line-height: 1.7; /* Increased for readability */
-        font-size: 0.875rem; /* Optimized for mobile */
+        font-size: 0.875rem;
+        line-height: 1.7;
+        color: #9CA3AF;
         overflow-wrap: break-word;
     }
     .prose p {
@@ -427,30 +427,30 @@
     }
     .prose ul {
         list-style-type: disc;
-        padding-left: 1.1em; /* Reduced for mobile */
+        padding-left: 1.1em;
         margin-bottom: 1em;
     }
     .prose li {
         margin-bottom: 0.5em;
     }
     .prose strong {
-        color: #F3F4F6; /* on-surface */
         font-weight: 600;
+        color: #F3F4F6;
     }
     @media (min-width: 768px) {
         .prose {
-            font-size: 0.95rem; /* Return to a larger size on desktop */
+            font-size: 0.95rem;
         }
     }
 
-    /* Informal Expense Card Highlight */
+    /* Expense Card Styles */
     .expense-card {
-        border-left: 4px solid transparent;
         transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        border-left: 4px solid transparent;
     }
     .informal-expense {
-        border-left-color: #FACC15; /* Tailwind yellow-400 */
         background-color: rgba(250, 204, 21, 0.05);
+        border-left-color: #FACC15;
     }
     .informal-expense:hover {
         background-color: rgba(250, 204, 21, 0.1);
