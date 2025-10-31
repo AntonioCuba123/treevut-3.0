@@ -1,11 +1,17 @@
 import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect } from 'react';
-import { type Expense, type ExpenseData } from '../types';
+import { type Expense, type ExpenseData, type UserChallenge, type Challenge, ChallengeStatus, ChallengeType, ChallengeFrequency, type VirtualGood } from '../types';
+import { allChallenges } from '../services/challengeService';
+import { allVirtualGoods } from '../services/marketService';
+import { allChallenges } from '../services/challengeService';
 import { sendInformalExpenseNotification } from '../services/notificationService';
 import { generateUniqueId } from '../utils';
 
 export type AlertState = { message: string; type: 'info' | 'warning' | 'danger' } | null;
 
 export interface DataContextType {
+    userChallenges: UserChallenge[];
+    bellotas: number;
+    purchasedGoods: string[];
     // State
     expenses: Expense[];
     budget: number | null;
@@ -45,6 +51,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return saved ? Number(saved) : 0;
     });
     const [alert, setAlert] = useState<AlertState>(null);
+    const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
+    const [bellotas, setBellotas] = useState<number>(0);
+    const [purchasedGoods, setPurchasedGoods] = useState<string[]>([]);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     // Load all data from localStorage on initial render
@@ -89,6 +98,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             }
             if (annualIncome !== null) {
                 localStorage.setItem('treevut-annualIncome', annualIncome.toString());
+            localStorage.setItem('treevut-user-challenges', JSON.stringify(userChallenges));
+            localStorage.setItem('treevut-bellotas', bellotas.toString());
+            localStorage.setItem('treevut-purchased-goods', JSON.stringify(purchasedGoods));
             } else {
                 localStorage.removeItem('treevut-annualIncome');
             }
@@ -131,6 +143,71 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const totalAhorroPerdido = useMemo(() => expenses.reduce((sum, expense) => sum + expense.ahorroPerdido, 0), [expenses]);
     const totalFormalExpenses = useMemo(() => expenses.filter(e => e.esFormal).reduce((sum, expense) => sum + expense.total, 0), [expenses]);
     const formalityIndex = useMemo(() => totalExpenses > 0 ? (totalFormalExpenses / totalExpenses) * 100 : 100, [totalFormalExpenses, totalExpenses]);
+        // --- Lógica de Desafíos ---
+    useEffect(() => {
+        if (isInitialLoad) return;
+        checkAndUpdateChallenges();
+    }, [expenses, budget, formalityIndex]);
+
+    const checkAndUpdateChallenges = () => {
+        const activeChallenges = allChallenges.filter(challenge => {
+            const userChallenge = userChallenges.find(uc => uc.challengeId === challenge.id);
+            if (!userChallenge) return true; // Es un nuevo desafío
+            if (userChallenge.status === ChallengeStatus.CLAIMED && challenge.frequency === ChallengeFrequency.ONCE) return false; // Ya completado y reclamado
+            // Lógica para resetear desafíos semanales/mensuales aquí
+            return true;
+        });
+
+            const purchaseGood = (goodId: string, price: number) => {
+        if (bellotas >= price) {
+            setBellotas(prev => prev - price);
+            setPurchasedGoods(prev => [...prev, goodId]);
+        } else {
+            setAlert({ message: 'No tienes suficientes bellotas para comprar este artículo.', type: 'warning' });
+        }
+    };
+
+    const updatedChallenges = activeChallenges.map(challenge => {
+            let progress = 0;
+            let isCompleted = false;
+
+            switch (challenge.type) {
+                case ChallengeType.REGISTER_EXPENSES:
+                    progress = expenses.length;
+                    break;
+                case ChallengeType.REACH_FORMALITY_INDEX:
+                    progress = formalityIndex;
+                    break;
+                case ChallengeType.SET_BUDGET:
+                    progress = budget ? 1 : 0;
+                    break;
+                case ChallengeType.REGISTER_IN_CATEGORY:
+                    progress = expenses.filter(e => e.categoria === challenge.categoryGoal).length;
+                    break;
+            }
+
+            if (progress >= challenge.goal) {
+                isCompleted = true;
+            }
+
+            const existing = userChallenges.find(uc => uc.challengeId === challenge.id);
+            if (existing) {
+                if (existing.status !== ChallengeStatus.ACTIVE) return existing; // No sobreescribir si ya está completado/reclamado
+                return { ...existing, currentProgress: progress, status: isCompleted ? ChallengeStatus.COMPLETED : ChallengeStatus.ACTIVE };
+            } else {
+                return {
+                    challengeId: challenge.id,
+                    currentProgress: progress,
+                    status: isCompleted ? ChallengeStatus.COMPLETED : ChallengeStatus.ACTIVE,
+                    startDate: new Date().toISOString(),
+                };
+            }
+        });
+
+        setUserChallenges(updatedChallenges);
+    };
+
+
     const formalityIndexByCount = useMemo(() => {
         if (expenses.length === 0) return 100;
         const formalCount = expenses.filter(e => e.esFormal).length;
@@ -141,8 +218,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const value = useMemo(() => ({
         expenses, budget, annualIncome, alert,
         totalExpenses, totalAhorroPerdido, formalityIndex, formalityIndexByCount,
-        addExpense, updateExpense, deleteExpense, updateBudget, updateAnnualIncome, setAlert
-    }), [expenses, budget, annualIncome, alert, totalExpenses, totalAhorroPerdido, formalityIndex, formalityIndexByCount]);
+        addExpense, updateExpense, deleteExpense, updateBudget, updateAnnualIncome, setAlert, userChallenges, bellotas, purchasedGoods, purchaseGood
+    }), [expenses, budget, annualIncome, alert, totalExpenses, totalAhorroPerdido, formalityIndex, formalityIndexByCount, userChallenges, bellotas, purchasedGoods]);
 
     return (
         <DataContext.Provider value={value}>

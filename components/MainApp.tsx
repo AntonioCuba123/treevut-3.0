@@ -11,6 +11,9 @@ import LearnView from './LearnView';
 // Critical components loaded immediately
 const ActionButtons = React.lazy(() => import('./ActionButtons'));
 const WalletView = React.lazy(() => import('./WalletView'));
+const ChallengeBoard = React.lazy(() => import(/* webpackChunkName: "challenges" */ './ChallengeBoard'));
+const Marketplace = React.lazy(() => import(/* webpackChunkName: "market" */ './Marketplace'));
+const CommunityForest = React.lazy(() => import(/* webpackChunkName: "community" */ './CommunityForest'));
 
 // Secondary components loaded on demand
 const AddExpenseModal = React.lazy(() => 
@@ -35,7 +38,7 @@ const UserProfile = React.lazy(() =>
   import(/* webpackChunkName: "profile" */ './UserProfile')
 );
 
-export type ActiveTab = 'gastos' | 'analisis' | 'consejos';
+export type ActiveTab = 'gastos' | 'analisis' | 'consejos' | 'senda' | 'mercado' | 'bosque';
 type ExpenseModalAction = 'camera' | 'file';
 type ScanMode = 'receipt' | 'products' | 'verify';
 
@@ -185,7 +188,7 @@ const MainApp: React.FC = () => {
         }, 200);
     };
 
-    const tabs: ActiveTab[] = ['gastos', 'analisis', 'consejos'];
+    const tabs: ActiveTab[] = ['gastos', 'analisis', 'consejos', 'senda', 'mercado', 'bosque'];
     const activeIndex = tabs.indexOf(activeTab);
     const transformValue = -activeIndex * 100;
 
@@ -200,6 +203,9 @@ const MainApp: React.FC = () => {
                     <button ref={billeteraTabRef} onClick={() => handleTabClick('gastos')} className={`flex-1 text-center py-2.5 rounded-xl font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary ${activeTab === 'gastos' ? 'bg-active-surface text-on-surface' : 'text-on-surface-secondary hover:bg-surface'}`}>Gastos</button>
                     <button ref={analisisTabRef} onClick={() => handleTabClick('analisis')} className={`flex-1 text-center py-2.5 rounded-xl font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary ${activeTab === 'analisis' ? 'bg-active-surface text-on-surface' : 'text-on-surface-secondary hover:bg-surface'}`}>Análisis</button>
                     <button onClick={() => handleTabClick('consejos')} className={`flex-1 text-center py-2.5 rounded-xl font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary ${activeTab === 'consejos' ? 'bg-active-surface text-on-surface' : 'text-on-surface-secondary hover:bg-surface'}`}>Consejos</button>
+                    <button onClick={() => handleTabClick('senda')} className={`flex-1 text-center py-2.5 rounded-xl font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary ${activeTab === 'senda' ? 'bg-active-surface text-on-surface' : 'text-on-surface-secondary hover:bg-surface'}`}>Senda</button>
+<button onClick={() => handleTabClick('mercado')} className={`flex-1 text-center py-2.5 rounded-xl font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary ${activeTab === 'mercado' ? 'bg-active-surface text-on-surface' : 'text-on-surface-secondary hover:bg-surface'}`}>Mercado</button>
+<button onClick={() => handleTabClick('bosque')} className={`flex-1 text-center py-2.5 rounded-xl font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary ${activeTab === 'bosque' ? 'bg-active-surface text-on-surface' : 'text-on-surface-secondary hover:bg-surface'}`}>Bosque</button>
                 </nav>
             </div>
             
@@ -210,13 +216,13 @@ const MainApp: React.FC = () => {
                  <div className="overflow-x-hidden flex-1">
                     <div 
                         {...swipeHandlers}
-                        className="flex w-[300%] h-full"
+                        className="flex w-[600%] h-full"
                         style={{ 
                             transform: `translateX(calc(${transformValue}% + ${swipeOffset}px))`,
                             transition: isSwiping ? 'none' : 'transform 0.3s ease-in-out'
                         }}
                     >
-                        <div className="w-1/3 flex-shrink-0 h-full overflow-y-auto">
+                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
                             <div className="px-4 pb-32">
                                  <WalletView
                                     expenses={filteredExpenses}
@@ -227,14 +233,29 @@ const MainApp: React.FC = () => {
                                  />
                             </div>
                         </div>
-                        <div className="w-1/3 flex-shrink-0 h-full overflow-y-auto">
+                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
                             <div className="px-4 pb-32">
                                 <AnalysisView />
                             </div>
                         </div>
-                        <div className="w-1/3 flex-shrink-0 h-full overflow-y-auto">
+                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
                             <div className="px-4 pb-32">
                                 <LearnView />
+                            </div>
+                        </div>
+                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
+                            <div className="px-4 pb-32">
+                                <Suspense fallback={<Spinner />}><ChallengeBoard /></Suspense>
+                            </div>
+                        </div>
+                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
+                            <div className="px-4 pb-32">
+                                <Suspense fallback={<Spinner />}><Marketplace userBellotas={user?.bellotas || 0} purchasedGoods={user?.purchasedGoods || []} onPurchase={() => {}} /></Suspense>
+                            </div>
+                        </div>
+                        <div className="w-1/6 flex-shrink-0 h-full overflow-y-auto">
+                            <div className="px-4 pb-32">
+                                <Suspense fallback={<Spinner />}><CommunityForest /></Suspense>
                             </div>
                         </div>
                     </div>

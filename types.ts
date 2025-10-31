@@ -27,11 +27,72 @@ export interface User {
     picture: string;
     documentId?: string;
     level: TreevutLevel;
+    bellotas: number; // Nueva moneda virtual
     progress: {
         expensesCount: number;
         formalityIndex: number; // Based on amount
     };
+    completedChallenges: string[]; // IDs de desafíos completados
     isProfileComplete: boolean;
+    purchasedGoods: string[]; // IDs de bienes virtuales comprados
+}
+
+// --- Nuevos Tipos para Gamificación: Desafíos y Misiones ---
+
+export enum ChallengeType {
+    REGISTER_EXPENSES = 'register_expenses',
+    REACH_FORMALITY_INDEX = 'reach_formality_index',
+    SET_BUDGET = 'set_budget',
+    REGISTER_IN_CATEGORY = 'register_in_category',
+}
+
+export enum ChallengeFrequency {
+    DAILY = 'daily',
+    WEEKLY = 'weekly',
+    MONTHLY = 'monthly',
+    ONCE = 'once', // Para desafíos únicos
+}
+
+export enum ChallengeStatus {
+    ACTIVE = 'active',
+    COMPLETED = 'completed',
+    CLAIMED = 'claimed', // Recompensa reclamada
+}
+
+export interface Challenge {
+    id: string;
+    title: string;
+    description: string;
+    icon: string; // Emoji o nombre de ícono
+    type: ChallengeType;
+    frequency: ChallengeFrequency;
+    goal: number; // Valor a alcanzar (e.g., 5 gastos, 80% de formalidad)
+    rewardBellotas: number;
+    categoryGoal?: CategoriaGasto; // Opcional, para desafíos de categoría
+}
+
+export interface VirtualGood {
+    id: string;
+    name: string;
+    description: string;
+    icon: string;
+    price: number;
+}
+
+export interface LeaderboardEntry {
+    userId: string;
+    userName: string;
+    userPicture: string;
+    score: number; // Podría ser el índice de formalidad, bellotas ganadas, etc.
+    rank: number;
+}
+
+export interface UserChallenge {
+    challengeId: string;
+    status: ChallengeStatus;
+    currentProgress: number;
+    startDate: string; // ISO Date
+    endDate?: string; // ISO Date, para desafíos con tiempo límite
 }
 
 export type ExpenseData = Omit<Expense, 'id' | 'imageUrl'>;
